@@ -14,17 +14,16 @@ const NAV = [
 export function SiteNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-hair bg-paper/80 backdrop-blur-md">
-      <Container className="flex h-[76px] items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
+      <Container className="flex h-[92px] items-center justify-between">
+        <Link href="/" className="flex items-center">
           <Image
             src="/assets/logo.png"
             alt="Founders Drive"
-            width={48}
-            height={48}
+            width={80}
+            height={80}
             priority
-            className="h-12 w-12 rounded-full"
+            className="h-20 w-20 rounded-full"
           />
-          <span className="font-display text-[22px]">Founders Drive</span>
         </Link>
         <nav className="hidden items-center gap-8 text-[14.5px] lg:flex">
           {NAV.map((n) => (

@@ -42,6 +42,7 @@ type Form = {
   stage: string;
   founderName: string;
   founderRole: string;
+  founderEmail: string;
   founderLinkedin: string;
   teamSize: string;
   traction: string;
@@ -61,6 +62,7 @@ const EMPTY: Form = {
   stage: "",
   founderName: "",
   founderRole: "",
+  founderEmail: "",
   founderLinkedin: "",
   teamSize: "",
   traction: "",
@@ -102,6 +104,8 @@ export default function RegisterPage() {
     if (step === 1) {
       if (!form.founderName.trim()) e.founderName = "Who's the founder on stage?";
       if (!form.founderRole.trim()) e.founderRole = "Add a role.";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.founderEmail.trim()))
+        e.founderEmail = "We send your welcome + confirmations here.";
       if (!form.traction.trim()) e.traction = "Even “pre-revenue, 12 interviews done” is useful.";
       if (!form.fundStatus) e.fundStatus = "This drives investor matching — pick one.";
     }
@@ -131,7 +135,7 @@ export default function RegisterPage() {
         helpWanted: form.helpWanted,
         founderName: form.founderName,
         founderRole: form.founderRole,
-        founderEmail: `${form.founderName.replace(/\s+/g, ".").toLowerCase()}@example.com`,
+        founderEmail: form.founderEmail.trim(),
         founderLinkedin: form.founderLinkedin || undefined,
         applyToRoast: form.applyToRoast,
       });
@@ -189,9 +193,10 @@ export default function RegisterPage() {
                 {form.name} is in the directory.
               </h2>
               <p className="font-serif-x mx-auto mt-3 max-w-md text-[18px] text-muted">
+                We&rsquo;ve emailed <strong>{form.founderEmail}</strong> a confirmation.{" "}
                 {form.applyToRoast
                   ? "Your Roast My Startup application for Vol. 02 is submitted — selection is confirmed two weeks before the event."
-                  : "You can apply for a future Roast My Startup any time from your dashboard."}
+                  : "You can apply for a future Roast My Startup any time."}
               </p>
               <div className="mt-7 flex justify-center gap-3">
                 <Button href={`/directory/${done.slug}`}>View your profile</Button>
@@ -242,6 +247,9 @@ export default function RegisterPage() {
                   </Field>
                   <Field label="Role / title" error={errors.founderRole}>
                     <input className={inputCls} value={form.founderRole} onChange={(e) => set("founderRole", e.target.value)} placeholder="CEO, CTO…" />
+                  </Field>
+                  <Field label="Work email" error={errors.founderEmail} hint="Private — never shown on your public profile." full>
+                    <input className={inputCls} type="email" value={form.founderEmail} onChange={(e) => set("founderEmail", e.target.value)} placeholder="you@yourcompany.my" />
                   </Field>
                   <Field label="LinkedIn" hint="Optional">
                     <input className={inputCls} value={form.founderLinkedin} onChange={(e) => set("founderLinkedin", e.target.value)} placeholder="linkedin.com/in/…" />
@@ -344,7 +352,7 @@ export default function RegisterPage() {
                       ["Company", `${form.name}${form.website ? `\n${form.website}` : ""}`],
                       ["What they do", form.pitch],
                       ["Sector / stage", `${form.sector} · ${form.stage}${form.city ? ` · ${form.city}` : ""}`],
-                      ["Founder", `${form.founderName}, ${form.founderRole}${form.teamSize ? `\nTeam: ${form.teamSize}` : ""}`],
+                      ["Founder", `${form.founderName}, ${form.founderRole}\n${form.founderEmail} (private)${form.teamSize ? `\nTeam: ${form.teamSize}` : ""}`],
                       ["Traction", form.traction],
                       ["Funding", `Raised: ${form.fundingRaised || "—"}\nStatus: ${form.fundStatus}${form.targetAmount ? `\nTarget: ${form.targetAmount}` : ""}`],
                       ["Help wanted", form.helpWanted.join(", ") || "—"],

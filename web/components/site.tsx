@@ -73,8 +73,9 @@ export function SiteFooter() {
             title="More"
             links={[
               ["Register", "/register"],
+              ["List your fund", "/capital-connect/apply"],
               ["Apply to pitch", "/roast-my-startup#apply"],
-              ["Poll admin", "/poll/admin"],
+              ["Admin", "/admin"],
             ]}
           />
         </div>

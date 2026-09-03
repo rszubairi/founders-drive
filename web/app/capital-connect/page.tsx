@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Container, Eyebrow, Card, Chip } from "@/components/ui";
+import { Container, Eyebrow, Card, Chip, Button } from "@/components/ui";
 
 const SECTORS = ["Fintech", "SaaS / B2B software", "Healthtech / AI", "Marketplace / Logistics"];
 const STAGES = ["Pre-Seed", "Seed", "Series A"];
@@ -26,6 +26,15 @@ export default function CapitalConnectPage() {
         Verified fund profiles with stage, ticket size, sectors and thesis. Every startup profile
         carries a match score against this list, and explains why.
       </p>
+
+      <div className="mt-6 flex flex-wrap items-center gap-4">
+        <Button href="/capital-connect/apply" variant="ghost" className="px-5 py-2.5 text-sm">
+          List your fund
+        </Button>
+        <span className="text-[13px] text-faint">
+          New fund profiles are reviewed before they appear here.
+        </span>
+      </div>
 
       <div className="mt-8 flex flex-wrap gap-2">
         {SECTORS.map((s) => (

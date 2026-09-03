@@ -69,6 +69,14 @@ export default function StartupProfile({
             <span className="rounded-full bg-[rgba(198,65,10,0.12)] px-2.5 py-1 text-[11px] text-ember">
               {startup.fundStatus}
             </span>
+            {startup.claimed && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-ink px-2.5 py-1 text-[11px] text-paper">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                Claimed by the team
+              </span>
+            )}
           </div>
           <h1 className="font-display mt-3 text-[clamp(40px,6vw,68px)]">{startup.name}</h1>
           <p className="font-serif-x mt-3 max-w-xl text-[21px] leading-[1.5] text-muted">
@@ -234,6 +242,8 @@ export default function StartupProfile({
             )}
           </Card>
 
+          <ClaimCard slug={slug} companyName={startup.name} claimed={!!startup.claimed} />
+
           <Card className="p-6">
             <Eyebrow>Capital Connect · VC matches</Eyebrow>
             <div className="mt-4 grid gap-3">
@@ -287,5 +297,98 @@ function ReportCol({
         ))}
       </ul>
     </div>
+  );
+}
+
+function ClaimCard({
+  slug,
+  companyName,
+  claimed,
+}: {
+  slug: string;
+  companyName: string;
+  claimed: boolean;
+}) {
+  const submit = useMutation(api.claims.submitClaim);
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState({ name: "", email: "", role: "", note: "", evidenceUrl: "" });
+  const [state, setState] = useState<"idle" | "busy" | "sent" | "yours">("idle");
+  const [err, setErr] = useState<string | null>(null);
+
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim());
+  const ready = f.name.trim() && f.role.trim() && emailOk;
+
+  async function go() {
+    setState("busy");
+    setErr(null);
+    try {
+      const res = (await submit({
+        slug,
+        claimantName: f.name,
+        claimantEmail: f.email,
+        claimantRole: f.role,
+        note: f.note || undefined,
+        evidenceUrl: f.evidenceUrl || undefined,
+      })) as { status: string };
+      setState(res.status === "already_yours" ? "yours" : "sent");
+    } catch (e) {
+      setErr((e as Error).message);
+      setState("idle");
+    }
+  }
+
+  return (
+    <Card className="p-6">
+      <Eyebrow>{claimed ? "This profile is claimed" : "Do you run this startup?"}</Eyebrow>
+
+      {state === "sent" ? (
+        <p className="mt-3 text-[15px] text-muted">
+          Check <strong>{f.email}</strong> for a confirmation link. Once you confirm, a business
+          email that matches {companyName}&rsquo;s domain is approved automatically &mdash; anything
+          else goes to the Founders Drive team for review.
+        </p>
+      ) : state === "yours" ? (
+        <p className="mt-3 text-[15px] text-muted">You already manage this profile with that email.</p>
+      ) : (
+        <>
+          <p className="mt-2 text-[14px] text-muted">
+            {claimed
+              ? "Someone on the team already verified it. If that's wrong, send a claim from your company email and we'll sort it out."
+              : "Claim it with your work email to receive introduction requests and keep it up to date. We'll email you a link to confirm the address."}
+          </p>
+
+          {!open ? (
+            <button
+              onClick={() => setOpen(true)}
+              className="mt-4 rounded-full border border-hair-2 px-4 py-2 text-[13px] font-medium transition hover:border-ink"
+            >
+              {claimed ? "Send a claim anyway" : "Claim this profile"}
+            </button>
+          ) : (
+            <div className="mt-4 grid gap-3">
+              <Field label="Your name">
+                <input className={inputCls} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+              </Field>
+              <Field label="Role at the company">
+                <input className={inputCls} value={f.role} onChange={(e) => setF({ ...f, role: e.target.value })} placeholder="Co-founder & CEO" />
+              </Field>
+              <Field label="Business email" hint="Use a company-domain address if you have one — it verifies instantly.">
+                <input className={inputCls} type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder={`you@${companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.my`} />
+              </Field>
+              <Field label="Anything to add?" hint="Optional">
+                <textarea className={`${inputCls} min-h-[70px]`} value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} />
+              </Field>
+              <Field label="Proof link" hint="Optional — LinkedIn, team page, press">
+                <input className={inputCls} value={f.evidenceUrl} onChange={(e) => setF({ ...f, evidenceUrl: e.target.value })} placeholder="https://" />
+              </Field>
+              {err && <p className="text-[12.5px] text-[#a63244]">{err}</p>}
+              <Button onClick={go} disabled={!ready || state === "busy"}>
+                {state === "busy" ? "Sending…" : "Send claim"}
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+    </Card>
   );
 }

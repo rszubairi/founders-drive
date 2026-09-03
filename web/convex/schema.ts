@@ -34,11 +34,19 @@ export default defineSchema({
     featured: v.optional(v.boolean()),
     logoUrl: v.optional(v.string()),
     createdAt: v.number(),
+    // profile ownership (set once a claim is approved)
+    claimedByEmail: v.optional(v.string()),
+    claimedAt: v.optional(v.number()),
+    welcomeEmailSentAt: v.optional(v.number()),
+    // moderation — gates visibility in the public directory
+    status: v.optional(v.string()), // "pending" | "approved" | "rejected"
+    reviewedAt: v.optional(v.number()),
   })
     .index("by_slug", ["slug"])
     .index("by_sector", ["sector"])
     .index("by_stage", ["stage"])
-    .index("by_fundStatus", ["fundStatus"]),
+    .index("by_fundStatus", ["fundStatus"])
+    .index("by_status", ["status"]),
 
   founders: defineTable({
     startupId: v.id("startups"),
@@ -65,9 +73,14 @@ export default defineSchema({
     portfolioHighlights: v.array(v.string()),
     avatarUrl: v.optional(v.string()),
     website: v.optional(v.string()),
+    contactEmail: v.optional(v.string()), // private — never returned by public queries
     isVerified: v.boolean(),
+    // moderation — gates visibility on Capital Connect
+    status: v.optional(v.string()), // "pending" | "approved" | "rejected"
+    reviewedAt: v.optional(v.number()),
   })
-    .index("by_verified", ["isVerified"]),
+    .index("by_verified", ["isVerified"])
+    .index("by_status", ["status"]),
 
   events: defineTable({
     title: v.string(),
@@ -182,4 +195,27 @@ export default defineSchema({
     status: v.string(), // Pending | Accepted | Declined
     createdAt: v.number(),
   }).index("by_startup", ["startupId"]),
+
+  // Someone asserting they run a startup already in the directory. They verify
+  // control of a business email; a domain match auto-approves, otherwise it
+  // goes to manual review.
+  profileClaims: defineTable({
+    startupId: v.id("startups"),
+    claimantName: v.string(),
+    claimantEmail: v.string(), // business email, lower-cased
+    claimantRole: v.string(),
+    note: v.optional(v.string()),
+    evidenceUrl: v.optional(v.string()),
+    status: v.string(), // pending | verifying | approved | rejected
+    verifyToken: v.string(),
+    emailVerifiedAt: v.optional(v.number()),
+    domainMatch: v.boolean(), // claimant email domain == company domain
+    isFreeMail: v.boolean(), // gmail / yahoo / etc.
+    decidedAt: v.optional(v.number()),
+    decidedBy: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_startup", ["startupId"])
+    .index("by_token", ["verifyToken"])
+    .index("by_status", ["status"]),
 });

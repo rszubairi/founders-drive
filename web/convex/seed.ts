@@ -21,6 +21,7 @@ export const seed = mutation({
       "pitchApplications",
       "eventRegistrations",
       "introRequests",
+      "profileClaims",
       "startups",
       "investors",
       "events",
@@ -176,6 +177,7 @@ export const seed = mutation({
         ...rest,
         slug,
         createdAt: now,
+        status: "approved",
       });
       startupIds[s.name] = id;
       await ctx.db.insert("founders", {
@@ -185,6 +187,35 @@ export const seed = mutation({
         email: founder.email,
         isPrimary: true,
         bio: `${founder.role} at ${s.name}.`,
+      });
+    }
+
+    // A freshly submitted startup profile still waiting on review, so
+    // /admin/startups has something real to show.
+    {
+      const slug = "kedai-kira";
+      const id = await ctx.db.insert("startups", {
+        name: "Kedai Kira",
+        slug,
+        pitch: "Simple bookkeeping and e-invoicing app for Malaysian sole proprietors and micro-SMEs.",
+        sector: "Fintech",
+        stage: "Idea stage",
+        city: "Ipoh",
+        teamSize: "2-3",
+        traction: "120 waitlist signups, 8 paid design partners.",
+        fundStatus: "Not raising",
+        helpWanted: ["Technical advice", "Customer introductions"],
+        momentumScore: 41,
+        createdAt: now,
+        status: "pending",
+      });
+      await ctx.db.insert("founders", {
+        startupId: id,
+        name: "[Founder name]",
+        role: "Founder",
+        email: "founder@kedaikira.example.my",
+        isPrimary: true,
+        bio: "Founder at Kedai Kira.",
       });
     }
 
@@ -472,12 +503,38 @@ export const seed = mutation({
         isVerified: false,
       },
     ];
-    for (const inv of investors) await ctx.db.insert("investors", inv);
+    for (const inv of investors)
+      await ctx.db.insert("investors", { ...inv, status: "approved" });
+
+    // A couple of freshly submitted fund sign-ups still waiting on review,
+    // so /admin/investors has something real to show.
+    const pendingInvestorSeed = [
+      {
+        name: "Aiman Rasyid",
+        fundName: "Meridian East Capital",
+        role: "Principal",
+        stagePreferences: ["Seed", "Series A"],
+        sectors: ["Fintech", "SaaS / B2B software"],
+        ticketMin: 300000,
+        ticketMax: 2000000,
+        geography: ["Malaysia", "SEA"],
+        thesis: "New fund raised by ex-operators; backing enterprise software and fintech founders in Malaysia.",
+        leadPreference: "Co-invest",
+        portfolioHighlights: [],
+        website: "https://meridianeast.example.my",
+        contactEmail: "aiman@meridianeast.example.my",
+        isVerified: false,
+        status: "pending",
+      },
+    ];
+    for (const inv of pendingInvestorSeed) await ctx.db.insert("investors", inv);
 
     // ---- Event ----
-    const pitching = ["Aerocrop", "BayarPulse", "SupplyJaga", "Kelas Kita"].map(
-      (n) => startupIds[n],
-    );
+    // No past volumes yet — Vol. 02 below is the first Roast My Startup event.
+    // Once it (or a later volume) is marked "Completed", it will surface
+    // automatically in the Past Events section via events.getPastEvents.
+    const pitchingNames = ["Aerocrop", "BayarPulse", "SupplyJaga", "Kelas Kita"];
+    const pitching = pitchingNames.map((n) => startupIds[n]);
     const eventId = await ctx.db.insert("events", {
       title: "Roast My Startup — Vol. 02",
       volume: "Vol. 02",
@@ -490,6 +547,27 @@ export const seed = mutation({
       status: "Upcoming",
       pitchingStartups: pitching,
     });
+
+    // ---- Pitch applications ----
+    // More startups apply than the four seats available — the admin picks
+    // which four actually pitch at /admin/roast.
+    for (const s of startupSeed) {
+      const selected = pitchingNames.includes(s.name);
+      await ctx.db.insert("pitchApplications", {
+        eventId,
+        startupId: startupIds[s.name],
+        companyName: s.name,
+        founderName: s.founder.name,
+        email: s.founder.email,
+        oneLiner: s.pitch,
+        sector: s.sector,
+        stage: s.stage,
+        whyScrutinyReady: `${s.name} wants direct feedback on ${s.fundStatus === "Raising now" ? "the current raise" : "where the business is weak"}.`,
+        helpWanted: s.helpWanted,
+        status: selected ? "Selected" : "Pending",
+        createdAt: now,
+      });
+    }
 
     // ---- Polls (one per pitch) ----
     const pollDefs = [

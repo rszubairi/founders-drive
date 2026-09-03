@@ -5,13 +5,20 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
+  {
+    rules: {
+      // The Convex data layer is loosely typed at the component boundary
+      // (fully typed inside convex/). Keep `any` as a warning, not an error.
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
+  // convex/_generated is machine-generated; convex/ is linted by `convex dev`.
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "convex/_generated/**",
   ]),
 ]);
 

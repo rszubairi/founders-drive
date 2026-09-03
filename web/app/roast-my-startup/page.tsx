@@ -47,6 +47,8 @@ const HELP = [
 
 export default function RoastPage() {
   const event = useQuery(api.events.getUpcomingEvent);
+  const pastEvents = useQuery(api.events.getPastEvents);
+  const lastEvent = pastEvents?.[0];
   const registerForEvent = useMutation(api.events.registerForEvent);
   const applyToPitch = useMutation(api.events.applyToPitch);
 
@@ -210,6 +212,56 @@ export default function RoastPage() {
           </div>
         </Container>
       </section>
+
+      {/* PAST EVENTS — hidden until the first volume is marked Completed */}
+      {pastEvents && pastEvents.length > 0 && (
+        <section className="bg-paper-2" id="past-events">
+          <Container className="py-20">
+            <Eyebrow>Past events</Eyebrow>
+            <h2 className="font-display mt-5 text-[clamp(28px,4vw,46px)]">
+              Every volume, on the record.
+            </h2>
+
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+              {pastEvents.map((ev: any) => (
+                <Card key={ev._id} className="p-6">
+                  <div className="tagline text-ember">{ev.volume}</div>
+                  <h3 className="font-display mt-1 text-[22px]">{ev.title}</h3>
+                  <div className="mt-2 text-[13.5px] text-muted">
+                    {ev.date} · {ev.venue}
+                  </div>
+                  <div className="mt-2 text-[13px] text-faint">
+                    {ev.registeredCount} of {ev.totalSeats} seats filled · {ev.pitching.length} startups pitched
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {lastEvent && (
+              <div className="mt-14">
+                <div className="tagline">Who pitched at {lastEvent.volume}</div>
+                <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+                  {lastEvent.pitching.map((s: any) => (
+                    <Card key={s.slug} className="fd-lift p-5">
+                      <h4 className="font-serif-x text-[19px]">{s.name}</h4>
+                      <div className="mt-1 text-[12px] text-faint">
+                        {s.sector} · {s.stage}
+                      </div>
+                      <p className="mt-2.5 text-[13.5px] text-muted">{s.pitch}</p>
+                      <Link
+                        href={`/directory/${s.slug}`}
+                        className="mt-3 inline-block font-mono-x text-[12.5px] text-ember"
+                      >
+                        View profile &rarr;
+                      </Link>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Container>
+        </section>
+      )}
 
       {/* WHO SHOULD APPLY + APPLY FORM */}
       <section className="relative overflow-hidden bg-ink-2 text-paper" id="apply">

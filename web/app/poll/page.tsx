@@ -25,11 +25,16 @@ const TAGS = [
 ];
 
 export default function PollPage() {
+  // localStorage is only available after hydration, so read it in an effect.
   const [sessionId, setSessionId] = useState<string>("");
-  useEffect(() => setSessionId(getVoterSessionId()), []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration-safe localStorage read
+    setSessionId(getVoterSessionId());
+  }, []);
 
   const poll = useQuery(api.polls.getActivePoll);
   const active = poll?.active ?? null;
+  const activeId: string | null = active?._id ?? null;
 
   const results = useQuery(
     api.polls.getLiveResults,
@@ -48,12 +53,15 @@ export default function PollPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // reset local ballot when the active pitch changes
-  useEffect(() => {
+  // Reset the local ballot when the active pitch changes — the
+  // "adjust state during render on prop change" pattern from the React docs.
+  const [ballotFor, setBallotFor] = useState<string | null>(activeId);
+  if (activeId !== ballotFor) {
+    setBallotFor(activeId);
     setPicks({ clarityScore: null, investibilityScore: null, innovationScore: null });
     setTags([]);
     setError(null);
-  }, [active?._id]);
+  }
 
   const mine = results?.mine ?? null;
   const submitted = !!mine;

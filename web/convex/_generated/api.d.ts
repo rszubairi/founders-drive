@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as claims from "../claims.js";
+import type * as emails from "../emails.js";
 import type * as events from "../events.js";
 import type * as investors from "../investors.js";
 import type * as perks from "../perks.js";
@@ -22,6 +24,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  claims: typeof claims;
+  emails: typeof emails;
   events: typeof events;
   investors: typeof investors;
   perks: typeof perks;

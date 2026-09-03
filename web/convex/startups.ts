@@ -1,4 +1,5 @@
 import { query, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 function slugify(name: string) {
@@ -18,6 +19,8 @@ export const listStartups = query({
   },
   handler: async (ctx, args) => {
     let rows = await ctx.db.query("startups").collect();
+    // Only approved profiles show up in the public directory.
+    rows = rows.filter((r: any) => r.status === "approved");
     if (args.sector) rows = rows.filter((r: any) => r.sector === args.sector);
     if (args.stage) rows = rows.filter((r: any) => r.stage === args.stage);
     if (args.fundStatus) rows = rows.filter((r: any) => r.fundStatus === args.fundStatus);
@@ -57,6 +60,8 @@ export const getStartupBySlug = query({
       .collect();
     return {
       ...publicStartup(startup),
+      claimed: !!startup.claimedByEmail,
+      claimedAt: startup.claimedAt,
       founders: founders.map((f: any) => ({
         name: f.name,
         role: f.role,
@@ -127,6 +132,7 @@ export const registerStartup = mutation({
       momentumScore: 50,
       featured: false,
       createdAt: Date.now(),
+      status: "pending",
     });
 
     await ctx.db.insert("founders", {
@@ -160,6 +166,15 @@ export const registerStartup = mutation({
         });
       }
     }
+
+    await ctx.db.patch(startupId, { welcomeEmailSentAt: Date.now() });
+    await ctx.scheduler.runAfter(0, internal.emails.sendFounderWelcome, {
+      to: args.founderEmail,
+      founderName: args.founderName,
+      companyName: args.name,
+      slug,
+      appliedToRoast: !!args.applyToRoast,
+    });
 
     return { startupId, slug };
   },
@@ -214,5 +229,43 @@ function publicStartup(r: any) {
     realityScore: r.realityScore,
     featured: r.featured,
     logoUrl: r.logoUrl,
+    status: r.status ?? "pending",
   };
 }
+
+// ---- Admin (startup approval queue) ----
+// v1 has no authentication — see /admin for the same warning shown in-app.
+
+export const adminListStartups = query({
+  args: { status: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    let rows = await ctx.db.query("startups").collect();
+    if (args.status) rows = rows.filter((r: any) => (r.status ?? "pending") === args.status);
+    rows.sort((a: any, b: any) => b.createdAt - a.createdAt);
+    return Promise.all(
+      rows.map(async (r: any) => {
+        const founder = await ctx.db
+          .query("founders")
+          .withIndex("by_startup", (q: any) => q.eq("startupId", r._id))
+          .first();
+        return {
+          ...r,
+          status: r.status ?? "pending",
+          founderName: founder?.name,
+          founderEmail: founder?.email,
+        };
+      }),
+    );
+  },
+});
+
+export const decideStartup = mutation({
+  args: { startupId: v.id("startups"), approve: v.boolean() },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.startupId, {
+      status: args.approve ? "approved" : "rejected",
+      reviewedAt: Date.now(),
+    });
+    return { ok: true };
+  },
+});

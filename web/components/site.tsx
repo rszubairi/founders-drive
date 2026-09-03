@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Container, Button } from "./ui";
 
 const NAV = [
@@ -15,17 +16,14 @@ export function SiteNav() {
     <header className="sticky top-0 z-40 border-b border-hair bg-paper/80 backdrop-blur-md">
       <Container className="flex h-[76px] items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden>
-            <circle cx="13" cy="13" r="12" stroke="var(--color-ink)" strokeWidth="1.5" />
-            <path
-              className="fd-spin"
-              d="M13 3a10 10 0 0 1 0 20"
-              stroke="var(--color-ember)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <circle cx="13" cy="13" r="3.2" fill="var(--color-ember)" />
-          </svg>
+          <Image
+            src="/assets/logo.png"
+            alt="Founders Drive"
+            width={48}
+            height={48}
+            priority
+            className="h-12 w-12 rounded-full"
+          />
           <span className="font-display text-[22px]">Founders Drive</span>
         </Link>
         <nav className="hidden items-center gap-8 text-[14.5px] lg:flex">
@@ -62,7 +60,16 @@ export function SiteFooter() {
     <footer className="bg-ink text-[#cfc2b4]">
       <Container className="flex flex-col justify-between gap-10 py-14 sm:flex-row">
         <div>
-          <div className="font-display text-2xl text-paper">Founders Drive</div>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/assets/logo.png"
+              alt="Founders Drive"
+              width={44}
+              height={44}
+              className="h-11 w-11 rounded-full"
+            />
+            <div className="font-display text-2xl text-paper">Founders Drive</div>
+          </div>
           <p className="tagline mt-2.5 text-faint">
             The Malaysian startup ecosystem &middot; Kuala Lumpur
           </p>

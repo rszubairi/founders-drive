@@ -36,6 +36,13 @@ export const metadata: Metadata = {
   title: "Founders Drive — Roast My Startup",
   description:
     "The Malaysian startup ecosystem. Four startups pitch every month, then take ten minutes of honest challenge — with follow-through.",
+  icons: { icon: "/assets/logo.png", apple: "/assets/logo.png" },
+  openGraph: {
+    title: "Founders Drive — Roast My Startup",
+    description:
+      "The Malaysian startup ecosystem. Four startups pitch every month, then take ten minutes of honest challenge — with follow-through.",
+    images: ["/assets/logo.png"],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

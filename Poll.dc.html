@@ -1,0 +1,402 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    :root{
+      --paper:#FBF7F1; --ink:#17120E; --muted:#6E635A; --faint:#9B8E7F;
+      --ember:#C6410A; --ember-deep:#8A2D0A; --gold:#E8A87C; --gold-2:#F0C199;
+      --card-bg:rgba(255,255,255,0.045); --card-border:rgba(255,255,255,0.12);
+      --sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+      --serif:"Newsreader",Georgia,"Times New Roman",serif;
+      --display:"Instrument Serif","Newsreader",Georgia,serif;
+      --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:16px;line-height:1.55;font-weight:450;-webkit-font-smoothing:antialiased;}
+    h1,h2,h3{margin:0;font-weight:400;letter-spacing:-0.015em;}
+    p{margin:0;}
+    a{color:var(--gold);text-decoration:none;} a:hover{color:var(--gold-2);}
+    .display{font-family:var(--display);letter-spacing:-0.02em;line-height:1.02;}
+    .serif{font-family:var(--serif);} .mono{font-family:var(--mono);}
+    .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);font-weight:500;}
+    .tag{font-family:var(--mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--faint);}
+    .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:18px;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:var(--sans);font-weight:500;font-size:15px;padding:15px 30px;border-radius:999px;cursor:pointer;border:1px solid;transition:all .18s ease;}
+    .rise{opacity:0;transform:translateY(16px);animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards;}
+    @keyframes rise{to{opacity:1;transform:none;}}
+    .d1{animation-delay:.08s}.d2{animation-delay:.16s}.d3{animation-delay:.24s}
+    .pill{width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14.5px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#CFC2B4;transition:all .14s ease;}
+    .pill:hover{transform:translateY(-2px);border-color:var(--gold);color:var(--paper);}
+    .pill-on{background:linear-gradient(135deg,var(--gold),var(--ember));border-color:transparent;color:#fff;transform:translateY(-2px);box-shadow:0 8px 20px -6px rgba(198,65,10,.7);}
+    .tag-pill{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;font-size:13px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.03);color:#D4C7BA;cursor:pointer;transition:all .15s ease;}
+    .tag-pill:hover{border-color:var(--gold);color:#fff;}
+    .tag-pill-on{border-color:var(--ember);background:rgba(198,65,10,0.22);color:#FFE1D2;}
+    .grain{position:absolute;inset:0;pointer-events:none;opacity:.35;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");}
+    .glow{position:absolute;border-radius:50%;filter:blur(45px);pointer-events:none;animation:float 11s ease-in-out infinite;}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+    .bartrack{height:12px;background:rgba(255,255,255,0.10);border-radius:6px;position:relative;overflow:visible;}
+    .barval{position:absolute;left:0;top:0;height:12px;border-radius:6px;background:linear-gradient(90deg,var(--gold),var(--ember));transform-origin:left;transform:scaleX(0);animation:grow 1s cubic-bezier(.2,.7,.2,1) forwards;}
+    @keyframes grow{to{transform:scaleX(1);}}
+    .pulse-dot{width:8px;height:8px;border-radius:50%;background:#5FBF6A;box-shadow:0 0 0 0 rgba(95,191,106,.6);animation:pl 2s ease-out infinite;}
+    @keyframes pl{0%{box-shadow:0 0 0 0 rgba(95,191,106,.5)}100%{box-shadow:0 0 0 10px rgba(95,191,106,0)}}
+    @media (prefers-reduced-motion:reduce){
+      .rise{opacity:1;transform:none;animation:none}.glow{animation:none}.barval{transform:none;animation:none}
+    }
+  </style>
+</helmet>
+
+<div style="width:1440px;background:var(--ink);padding:52px 0 84px;overflow:hidden;position:relative;">
+  <div class="glow" style="top:-120px;right:140px;width:440px;height:440px;background:radial-gradient(circle,rgba(198,65,10,.35),transparent 70%);"></div>
+  <div class="glow" style="bottom:60px;left:-100px;width:360px;height:360px;background:radial-gradient(circle,rgba(232,168,124,.22),transparent 70%);animation-direction:reverse;"></div>
+  <div class="grain"></div>
+
+  <div style="max-width:940px;margin:0 auto;padding:0 50px;position:relative;z-index:2;">
+
+    <!-- TOP BAR & PITCH SWITCHER -->
+    <div class="rise" style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div class="eyebrow">Live Audience Scorecard</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+          <span class="pulse-dot"></span>
+          <span class="tag" style="color:var(--paper);font-size:12px;">Roast My Startup &middot; Vol. 02 Live at Common Ground KL</span>
+        </div>
+      </div>
+      <!-- Pitch tabs -->
+      <div style="display:flex;gap:6px;background:rgba(255,255,255,0.06);padding:4px;border-radius:999px;border:1px solid rgba(255,255,255,0.12);">
+        <sc-for list="{{pitches}}" as="p" hint-placeholder-count="4">
+          <div onClick="{{p.select}}" style="{{p.tabStyle}}">
+            <span class="mono" style="font-size:11px;">Pitch {{p.num}}</span>
+            <span style="font-size:12px;font-weight:500;margin-left:4px;">{{p.name}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- NOW ROASTING BANNER -->
+    <div class="card rise d1" style="margin-top:20px;padding:26px 30px;display:flex;justify-content:space-between;align-items:center;gap:24px;">
+      <div style="max-width:580px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="tag" style="color:var(--gold);">Pitch {{activePitchNum}} of 4 &middot; {{activeStartup.sector}}</span>
+          <span class="tag" style="background:rgba(232,168,124,0.14);color:var(--gold);padding:2px 8px;border-radius:4px;">{{activeStartup.stage}}</span>
+        </div>
+        <h1 class="display" style="font-size:42px;margin-top:8px;color:var(--paper);">{{activeStartup.name}}</h1>
+        <p class="serif" style="font-size:17px;color:#C9BCAD;margin-top:6px;line-height:1.45;">{{activeStartup.pitch}}</p>
+      </div>
+      <div style="flex:none;text-align:right;border-left:1px solid rgba(255,255,255,0.12);padding-left:26px;">
+        <div class="mono" style="font-size:36px;color:var(--paper);line-height:1;">{{voterCount}}</div>
+        <div class="tag" style="margin-top:4px;">live scorecards</div>
+        <div class="tag" style="font-size:9.5px;color:var(--gold);margin-top:3px;">Synced with Convex DB</div>
+      </div>
+    </div>
+
+    <!-- INSTRUCTIONS -->
+    <div class="rise d2" style="margin-top:32px;">
+      <h2 class="display" style="font-size:30px;color:var(--paper);">Score the pitch &middot; 1 to 10 scale</h2>
+      <p class="serif" style="font-size:16px;color:#C9BCAD;margin-top:6px;">Average people listening give founders real signal before the VC panel delivers their reality check.</p>
+    </div>
+
+    <!-- 3 CORE AXES -->
+    <div style="margin-top:22px;display:grid;gap:14px;">
+      <sc-for list="{{axes}}" as="axis" hint-placeholder-count="3">
+        <div class="card" style="padding:22px 24px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="mono" style="font-size:11px;color:var(--gold);background:rgba(232,168,124,0.12);padding:2px 7px;border-radius:3px;">Axis {{axis.idx}}</span>
+                <h3 class="serif" style="font-size:21px;color:var(--paper);">{{axis.label}}</h3>
+              </div>
+              <p style="font-size:13.5px;color:var(--faint);margin-top:4px;">{{axis.help}}</p>
+            </div>
+            <sc-if value="{{submitted}}" hint-placeholder-val="{{ true }}">
+              <div style="text-align:right;flex:none;">
+                <span class="mono" style="font-size:28px;color:var(--gold);">{{axis.avg}}</span>
+                <div class="tag" style="font-size:10px;">room avg</div>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- VOTING 1-10 PILLS -->
+          <sc-if value="{{notSubmitted}}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;gap:7px;margin-top:16px;flex-wrap:wrap;">
+              <sc-for list="{{axis.pills}}" as="pill" hint-placeholder-count="10">
+                <div onClick="{{pill.pick}}" class="{{pill.cls}}">{{pill.n}}</div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- SUBMITTED RESULT BAR -->
+          <sc-if value="{{submitted}}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:16px;">
+              <div class="bartrack">
+                <div class="barval" style="width:{{axis.pct}}%;"></div>
+                <div style="position:absolute;top:-6px;height:24px;width:2px;background:var(--gold);left:{{axis.myPct}}%;"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:8px;">
+                <span class="tag" style="font-size:10.5px;color:var(--gold);">your vote &middot; {{axis.my}} / 10</span>
+                <span class="tag" style="font-size:10.5px;">{{axis.count}} audience votes in</span>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- QUICK FEEDBACK SIGNALS -->
+    <sc-if value="{{notSubmitted}}" hint-placeholder-val="{{ true }}">
+      <div class="card" style="margin-top:14px;padding:20px 24px;">
+        <div class="tag" style="color:var(--gold);">Audience Quick Signals (Optional)</div>
+        <p class="serif" style="font-size:14.5px;color:#C9BCAD;margin-top:4px;">Tap signals that capture your direct reaction to help populate their Reality Check Report:</p>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+          <sc-for list="{{signalTags}}" as="tag" hint-placeholder-count="6">
+            <div onClick="{{tag.toggle}}" class="{{tag.cls}}">{{tag.name}}</div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- SUBMIT BAR -->
+    <sc-if value="{{notSubmitted}}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:24px;display:flex;align-items:center;gap:18px;">
+        <div onClick="{{submit}}" class="btn" style="{{submitStyle}}">Submit Scorecard &rarr;</div>
+        <span class="tag" style="font-size:12px;color:var(--faint);">{{readyHint}}</span>
+      </div>
+    </sc-if>
+
+    <!-- LIVE ROOM VERDICT BREAKDOWN -->
+    <sc-if value="{{submitted}}" hint-placeholder-val="{{ true }}">
+      <div class="card rise" style="margin-top:22px;padding:30px;background:rgba(255,255,255,0.06);border-color:rgba(232,168,124,0.3);">
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:28px;align-items:center;">
+          <div>
+            <div class="tag" style="color:var(--gold);">Aggregated Room Verdict &middot; {{activeStartup.name}}</div>
+            <div style="display:flex;align-items:baseline;gap:12px;margin-top:6px;">
+              <span class="display" style="font-size:58px;color:var(--paper);line-height:1;">{{composite}}</span>
+              <span class="serif" style="font-size:22px;color:#C9BCAD;">/ 10 &middot; <strong style="color:var(--gold);">{{verdictWord}}</strong></span>
+            </div>
+            <p class="serif" style="font-size:15px;color:#C9BCAD;margin-top:10px;line-height:1.5;">
+              Your scores have been recorded into Convex DB. This signal feeds directly into {{activeStartup.name}}&rsquo;s <strong>Day 0 Reality Check Report</strong> alongside the VC panel feedback.
+            </p>
+          </div>
+          <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:12px;">
+            <div onClick="{{resetForNext}}" class="btn" style="background:linear-gradient(135deg,var(--gold),var(--ember));color:#fff;border:none;box-shadow:0 8px 20px -6px rgba(198,65,10,.6);">
+              Score Next Pitch &rarr;
+            </div>
+            <span class="tag" style="font-size:10px;">or select another startup above</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="margin-top:28px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:16px;">
+      <span class="tag">Powered by Founders Drive &middot; Live Convex Backend Engine</span>
+      <span class="tag">All votes anonymized</span>
+    </div>
+
+  </div>
+</div>
+
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1420}}'>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.state = {
+      activePitchIndex: 2, // Default to pitch 3 (SupplyJaga)
+      picks: { clarity: null, investibility: null, innovation: null },
+      selectedTags: [],
+      submitted: false,
+    };
+
+    this.STARTUPS = [
+      {
+        num: "01",
+        name: "Aerocrop Agtech",
+        sector: "Agritech",
+        stage: "Seed",
+        pitch: "Autonomous drone imagery and predictive yield analytics for oil palm plantations.",
+        base: { clarity: { sum: 1120, n: 142 }, investibility: { sum: 1080, n: 142 }, innovation: { sum: 1240, n: 142 } }
+      },
+      {
+        num: "02",
+        name: "BayarPulse",
+        sector: "Fintech",
+        stage: "Pre-Seed",
+        pitch: "Instant cross-border payroll and treasury settlement for remote Southeast Asian teams.",
+        base: { clarity: { sum: 1020, n: 138 }, investibility: { sum: 890, n: 138 }, innovation: { sum: 970, n: 138 } }
+      },
+      {
+        num: "03",
+        name: "SupplyJaga",
+        sector: "Marketplace / Logistics",
+        stage: "Seed",
+        pitch: "Next-day consolidated procurement and inventory intelligence for Malaysian F&B chains and kopitiams.",
+        base: { clarity: { sum: 1260, n: 145 }, investibility: { sum: 1145, n: 145 }, innovation: { sum: 1073, n: 145 } }
+      },
+      {
+        num: "04",
+        name: "MedFlow AI",
+        sector: "Healthtech / AI",
+        stage: "Pre-Series A",
+        pitch: "Multilingual ambient clinical scribe saving 80% doctor charting time across Malaysian clinics.",
+        base: { clarity: { sum: 1180, n: 130 }, investibility: { sum: 1120, n: 130 }, innovation: { sum: 1210, n: 130 } }
+      }
+    ];
+
+    this.META = {
+      clarity: {
+        label: "Pitch Clarity",
+        help: "Did you understand the core problem, who pays, and the exact fundraising ask?"
+      },
+      investibility: {
+        label: "Investibility",
+        help: "Would you put your own money or back this company given their current traction?"
+      },
+      innovation: {
+        label: "Innovation & Defensibility",
+        help: "How unique, hard to copy, or technologically defensible is this business?"
+      }
+    };
+
+    this.TAGS_LIST = [
+      "Crystal clear ICP",
+      "Pricing too conservative",
+      "High defensibility",
+      "Huge TAM in SEA",
+      "Strong founder aura",
+      "GTM needs tighter focus",
+      "High repeat rate",
+      "Defensible unit economics"
+    ];
+  }
+
+  selectPitch(idx){
+    this.setState({
+      activePitchIndex: idx,
+      picks: { clarity: null, investibility: null, innovation: null },
+      selectedTags: [],
+      submitted: false
+    });
+  }
+
+  pickScore(axis, val){
+    if (this.state.submitted) return;
+    this.setState({ picks: { ...this.state.picks, [axis]: val } });
+  }
+
+  toggleTag(tag){
+    if (this.state.submitted) return;
+    const cur = this.state.selectedTags;
+    const exists = cur.includes(tag);
+    const next = exists ? cur.filter(t => t !== tag) : [...cur, tag];
+    this.setState({ selectedTags: next });
+  }
+
+  ready(){
+    const p = this.state.picks;
+    return p.clarity != null && p.investibility != null && p.innovation != null;
+  }
+
+  submit(){
+    if (this.ready()) {
+      this.setState({ submitted: true });
+    }
+  }
+
+  resetForNext(){
+    const nextIdx = (this.state.activePitchIndex + 1) % this.STARTUPS.length;
+    this.selectPitch(nextIdx);
+  }
+
+  renderVals(){
+    const currentStartup = this.STARTUPS[this.state.activePitchIndex];
+    const sub = this.state.submitted;
+    const keys = ["clarity", "investibility", "innovation"];
+
+    const pitches = this.STARTUPS.map((s, idx) => {
+      const active = idx === this.state.activePitchIndex;
+      const tabStyle = active
+        ? "padding:6px 14px;border-radius:999px;background:var(--ember);color:#fff;cursor:pointer;"
+        : "padding:6px 14px;border-radius:999px;background:transparent;color:#A89B8E;cursor:pointer;";
+      return {
+        num: s.num,
+        name: s.name,
+        tabStyle,
+        select: () => this.selectPitch(idx)
+      };
+    });
+
+    const axes = keys.map((key, kIdx) => {
+      const b = currentStartup.base[key];
+      const my = this.state.picks[key];
+      const n = sub ? b.n + 1 : b.n;
+      const sum = (sub && my != null) ? b.sum + my : b.sum;
+      const avg = sum / n;
+      const pills = [];
+      for (let i = 1; i <= 10; i++){
+        pills.push({
+          n: i,
+          pick: () => this.pickScore(key, i),
+          cls: my === i ? "pill pill-on" : "pill"
+        });
+      }
+      return {
+        idx: "0" + (kIdx + 1),
+        label: this.META[key].label,
+        help: this.META[key].help,
+        pills,
+        my: my == null ? "—" : my,
+        avg: avg.toFixed(1),
+        pct: (avg * 10).toFixed(1),
+        myPct: my == null ? 0 : (my * 10 - 1).toFixed(1),
+        count: n
+      };
+    });
+
+    const signalTags = this.TAGS_LIST.map(t => {
+      const on = this.state.selectedTags.includes(t);
+      return {
+        name: t,
+        cls: on ? "tag-pill tag-pill-on" : "tag-pill",
+        toggle: () => this.toggleTag(t)
+      };
+    });
+
+    const rdy = this.ready();
+    let composite = null;
+    let verdictWord = "";
+    if (sub){
+      const c = (parseFloat(axes[0].avg) + parseFloat(axes[1].avg) + parseFloat(axes[2].avg)) / 3;
+      composite = c.toFixed(1);
+      verdictWord = c >= 8.0 ? "High Conviction Room" : c >= 6.5 ? "Solid Interest with Key Challenges" : "Tough Scrutiny Room";
+    }
+
+    const submitStyle = rdy
+      ? "border-color:transparent;background:linear-gradient(135deg,var(--gold),var(--ember));color:#fff;box-shadow:0 12px 28px -10px rgba(198,65,10,.7);"
+      : "border-color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.05);color:var(--faint);cursor:not-allowed;";
+
+    return {
+      pitches,
+      activePitchNum: currentStartup.num,
+      activeStartup: currentStartup,
+      axes,
+      signalTags,
+      submitted: sub,
+      notSubmitted: !sub,
+      voterCount: sub ? currentStartup.base.clarity.n + 1 : currentStartup.base.clarity.n,
+      submit: () => this.submit(),
+      resetForNext: () => this.resetForNext(),
+      submitStyle,
+      readyHint: rdy ? "All 3 dimensions scored — submit your verdict." : "Score all 3 dimensions to submit.",
+      composite,
+      verdictWord
+    };
+  }
+}
+</script>
+</body>
+</html>

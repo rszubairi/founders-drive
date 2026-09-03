@@ -1,0 +1,331 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    :root{
+      --paper:#FBF7F1; --ink:#17120E; --muted:#6E635A; --faint:#9B8E7F;
+      --ember:#C6410A; --ember-deep:#8A2D0A; --gold:#E8A87C; --gold-2:#F0C199;
+      --panel:#F2EADE; --panel-2:#EDE3D3; --line:#E2D6C4; --line-strong:#D6C7B0;
+      --sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+      --serif:"Newsreader",Georgia,"Times New Roman",serif;
+      --display:"Instrument Serif","Newsreader",Georgia,serif;
+      --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;font-weight:450;-webkit-font-smoothing:antialiased;}
+    h1,h2,h3,h4{margin:0;font-weight:400;letter-spacing:-0.015em;}
+    p{margin:0;}
+    a{color:var(--ember);text-decoration:none;} a:hover{color:var(--ember-deep);}
+    .wrap{max-width:1200px;margin:0 auto;padding:0 50px;}
+    .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ember);font-weight:500;}
+    .display{font-family:var(--display);letter-spacing:-0.02em;line-height:1.02;}
+    .serif{font-family:var(--serif);} .mono{font-family:var(--mono);}
+    .lead{font-family:var(--serif);font-size:21px;line-height:1.5;color:var(--muted);}
+    .rule{height:1px;background:var(--line);border:0;margin:0;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:var(--ember);color:var(--paper);font-family:var(--sans);font-weight:500;font-size:15px;padding:15px 30px;border:1px solid var(--ember);border-radius:6px;cursor:pointer;transition:all .15s ease;}
+    .btn:hover{background:var(--ember-deep);border-color:var(--ember-deep);color:#fff;}
+    .btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:transparent;color:var(--ink);font-family:var(--sans);font-weight:500;font-size:15px;padding:15px 30px;border:1px solid var(--line-strong);border-radius:6px;cursor:pointer;transition:all .15s ease;}
+    .btn-ghost:hover{border-color:var(--ink);}
+    .tag{font-family:var(--mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--faint);}
+    .card{background:var(--paper);border:1px solid var(--line-strong);border-radius:10px;padding:26px;}
+  </style>
+</helmet>
+
+<div style="background:var(--paper);width:1440px;overflow:hidden;">
+
+  <!-- NAV -->
+  <div style="border-bottom:1px solid var(--line);background:var(--paper);position:sticky;top:0;z-index:10;">
+    <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;height:78px;">
+      <div style="display:flex;align-items:baseline;gap:12px;">
+        <span class="display" style="font-size:24px;font-weight:600;">Founders Drive</span>
+        <span class="tag" style="border-left:1px solid var(--line-strong);padding-left:12px;color:var(--ember);">Roast My Startup</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:28px;font-size:14.5px;">
+        <span style="color:var(--ink);font-weight:500;">Format &amp; Framework</span>
+        <span style="color:var(--muted);">Rotating Panel</span>
+        <span style="color:var(--muted);">Reality Check Report</span>
+        <span style="color:var(--muted);">30-90 Day Journey</span>
+        <span style="color:var(--muted);">Alumni Proof</span>
+      </div>
+      <button class="btn" style="padding:12px 24px;">Apply to pitch</button>
+    </div>
+  </div>
+
+  <!-- HERO SECTION WITH CINEMATIC STAGE ATMOSPHERE -->
+  <div class="wrap" style="padding-top:72px;padding-bottom:60px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="eyebrow">Flagship Event &middot; Monthly Reality Check</span>
+      <span class="tag" style="background:rgba(198,65,10,0.1);color:var(--ember);padding:2px 8px;border-radius:4px;">Vol. 02 Applications Open</span>
+    </div>
+    <h1 class="display" style="font-size:104px;margin-top:16px;line-height:0.94;">Roast My<br>Startup</h1>
+
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:48px;margin-top:38px;align-items:start;">
+      <div>
+        <p class="lead" style="max-width:560px;">
+          5 minutes to pitch. 10 minutes to get challenged by rotating VCs, operators, and seasoned founders. Then a documented Reality Check Report, a 30-day Action Plan, and a follow-up at day 90 to prove the feedback right or wrong.
+        </p>
+        <div style="display:flex;gap:14px;margin-top:32px;">
+          <button class="btn">Apply to Pitch (Vol. 02)</button>
+          <button class="btn-ghost">RSVP as Audience</button>
+        </div>
+      </div>
+
+      <div style="border:1.5px solid var(--ink);border-radius:10px;padding:28px;background:var(--panel);">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <span class="tag" style="color:var(--ember);font-weight:600;">Vol. 02 &middot; Kuala Lumpur</span>
+          <span class="tag">4 Startups / 80 Audience</span>
+        </div>
+        <table class="mono" style="width:100%;font-size:14px;color:var(--ink);border-collapse:collapse;line-height:2.2;margin-top:14px;">
+          <tr><td style="color:var(--faint);">DATE</td><td style="text-align:right;">Thu 26 Jun 2026</td></tr>
+          <tr><td style="color:var(--faint);">TIME</td><td style="text-align:right;">6:30 PM Doors &middot; 7:00 PM Start</td></tr>
+          <tr><td style="color:var(--faint);">VENUE</td><td style="text-align:right;">Common Ground KL Eco City</td></tr>
+          <tr><td style="color:var(--faint);">APPLY BY</td><td style="text-align:right;">Fri 12 Jun 2026 (2 weeks before)</td></tr>
+        </table>
+        <div style="margin-top:18px;background:var(--paper);border:1px solid var(--line-strong);padding:10px 14px;border-radius:6px;">
+          <span class="mono" style="font-size:12px;color:var(--ember);">Backend: Live Audience Scoring with Convex DB</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BESPOKE EDITORIAL STAGE IMAGE -->
+    <div style="margin-top:44px;border-radius:14px;overflow:hidden;border:1px solid var(--line-strong);position:relative;box-shadow:0 20px 48px rgba(23,18,14,0.12);">
+      <img src="./assets/roast_stage.jpg" alt="Roast My Startup Live Pitch Atmosphere in Kuala Lumpur" style="width:100%;height:480px;object-fit:cover;display:block;">
+      <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top, rgba(23,18,14,0.92) 0%, transparent 100%);padding:30px 36px;color:var(--paper);display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+          <div class="tag" style="color:var(--gold);">Live Pitch Floor</div>
+          <div class="display" style="font-size:28px;color:#fff;margin-top:4px;">No soft questions. No polite nod. Just high-conviction reality check.</div>
+        </div>
+        <div class="tag" style="color:#CFC2B4;">Kuala Lumpur, Malaysia</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <!-- THE 6-PILLAR REALITY CHECK FRAMEWORK -->
+  <div style="background:var(--panel);padding:84px 0;">
+    <div class="wrap">
+      <div class="eyebrow">The 6-Pillar Framework</div>
+      <h2 class="display" style="font-size:46px;margin-top:16px;max-width:760px;">
+        Roasters move past generic criticism to pinpoint where the company is slow, weak, or misaligned.
+      </h2>
+
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:40px;">
+        
+        <!-- Pillar 1: Business -->
+        <div class="card">
+          <div class="mono" style="font-size:12px;color:var(--ember);">01 &middot; BUSINESS MODEL</div>
+          <h3 class="serif" style="font-size:22px;margin-top:10px;">Is the problem real &amp; will customers pay?</h3>
+          <p style="font-size:14.5px;color:var(--muted);margin-top:8px;">
+            Is pricing viable? Is the gross margin sustainable at scale? Are you selling a vitamin or an irreplaceable painkiller?
+          </p>
+        </div>
+
+        <!-- Pillar 2: Product -->
+        <div class="card">
+          <div class="mono" style="font-size:12px;color:var(--ember);">02 &middot; PRODUCT &amp; VALUE</div>
+          <h3 class="serif" style="font-size:22px;margin-top:10px;">Are founders solving the right problem?</h3>
+          <p style="font-size:14.5px;color:var(--muted);margin-top:8px;">
+            Is the product too complex? Are customers actually using it daily or churning after 60 days?
+          </p>
+        </div>
+
+        <!-- Pillar 3: Market -->
+        <div class="card">
+          <div class="mono" style="font-size:12px;color:var(--ember);">03 &middot; MARKET &amp; ICP</div>
+          <h3 class="serif" style="font-size:22px;margin-top:10px;">Is the target market realistic &amp; ready?</h3>
+          <p style="font-size:14.5px;color:var(--muted);margin-top:8px;">
+            Is your ICP too broad? Are you trying to serve both mamaks and multinational corporations? Is market timing right?
+          </p>
+        </div>
+
+        <!-- Pillar 4: Go-to-Market -->
+        <div class="card">
+          <div class="mono" style="font-size:12px;color:var(--ember);">04 &middot; GO-TO-MARKET</div>
+          <h3 class="serif" style="font-size:22px;margin-top:10px;">Is customer acquisition repeatable?</h3>
+          <p style="font-size:14.5px;color:var(--muted);margin-top:8px;">
+            Are sales cycles too long (9-12 months)? Is CAC sustainable? Who is the economic buyer with check-signing authority?
+          </p>
+        </div>
+
+        <!-- Pillar 5: Fundraising -->
+        <div class="card">
+          <div class="mono" style="font-size:12px;color:var(--ember);">05 &middot; FUNDRAISABILITY</div>
+          <h3 class="serif" style="font-size:22px;margin-top:10px;">Is the company genuinely fundable?</h3>
+          <p style="font-size:14.5px;color:var(--muted);margin-top:8px;">
+            Is the funding ask supported by actual traction and unit economics, or just optimistic revenue projections?
+          </p>
+        </div>
+
+        <!-- Pillar 6: Execution -->
+        <div class="card">
+          <div class="mono" style="font-size:12px;color:var(--ember);">06 &middot; EXECUTION SPEED</div>
+          <h3 class="serif" style="font-size:22px;margin-top:10px;">What is slowing the founders down?</h3>
+          <p style="font-size:14.5px;color:var(--muted);margin-top:8px;">
+            What should the founders stop doing, start doing, or accelerate immediately to achieve escape velocity?
+          </p>
+        </div>
+
+      </div>
+
+      <!-- WHY WHAT HOW WHO FORMULA -->
+      <div style="margin-top:32px;background:var(--paper);border:1.5px solid var(--ember);border-radius:10px;padding:28px 32px;">
+        <div class="eyebrow" style="color:var(--ember);">The Actionable Feedback Formula</div>
+        <h3 class="display" style="font-size:30px;margin-top:8px;">Every major challenge must follow: WHY &rarr; WHAT &rarr; HOW &rarr; WHO</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:18px;">
+          <div>
+            <div class="mono" style="font-size:13px;font-weight:600;color:var(--ember);">1. WHY</div>
+            <p style="font-size:13.5px;color:var(--muted);margin-top:4px;">Root cause diagnosis (e.g. ICP is too broad, sales cycle is 12 months).</p>
+          </div>
+          <div>
+            <div class="mono" style="font-size:13px;font-weight:600;color:var(--ember);">2. WHAT</div>
+            <p style="font-size:13.5px;color:var(--muted);margin-top:4px;">Specific strategic shift (e.g. narrow ICP strictly to Klang Valley cold-chain operators).</p>
+          </div>
+          <div>
+            <div class="mono" style="font-size:13px;font-weight:600;color:var(--ember);">3. HOW</div>
+            <p style="font-size:13.5px;color:var(--muted);margin-top:4px;">90-day actionable execution plan (e.g. run a 60-day pilot with 15 target merchants).</p>
+          </div>
+          <div>
+            <div class="mono" style="font-size:13px;font-weight:600;color:var(--ember);">4. WHO</div>
+            <p style="font-size:13.5px;color:var(--muted);margin-top:4px;">Named ecosystem intro (e.g. introduce 2 logistics operators and 1 B2B mentor).</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <!-- WHO'S ON THE PANEL (ROTATING ROSTER) -->
+  <div class="wrap" style="padding:80px 0;">
+    <div class="eyebrow">Who Does The Challenging</div>
+    <h2 class="display" style="font-size:46px;margin-top:16px;max-width:680px;">
+      A panel that rotates every single month, so no founder gets a soft room.
+    </h2>
+
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;margin-top:36px;">
+      
+      <div class="card">
+        <div style="width:48px;height:48px;border-radius:50%;background:rgba(198,65,10,0.1);color:var(--ember);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;">VC</div>
+        <h4 class="serif" style="font-size:20px;margin-top:14px;">Khailee Ng</h4>
+        <div class="tag" style="margin-top:3px;color:var(--ember);">500 Global (SEA) &middot; Managing Partner</div>
+        <p style="font-size:13.5px;color:var(--muted);margin-top:8px;">Backed Grab, Bukalapak, Carsome. Focuses on unit economics and founder velocity.</p>
+      </div>
+
+      <div class="card">
+        <div style="width:48px;height:48px;border-radius:50%;background:rgba(198,65,10,0.1);color:var(--ember);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;">OP</div>
+        <h4 class="serif" style="font-size:20px;margin-top:14px;">Marcus Tan</h4>
+        <div class="tag" style="margin-top:3px;color:var(--ember);">Exited Founder &middot; Supply Chain Ops</div>
+        <p style="font-size:13.5px;color:var(--muted);margin-top:8px;">Scaled dark store logistics to RM 20M GMV. Challenges operational bottlenecks and supplier terms.</p>
+      </div>
+
+      <div class="card">
+        <div style="width:48px;height:48px;border-radius:50%;background:rgba(198,65,10,0.1);color:var(--ember);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;">VC</div>
+        <h4 class="serif" style="font-size:20px;margin-top:14px;">Thomas Tsao</h4>
+        <div class="tag" style="margin-top:3px;color:var(--ember);">Gobi Partners &middot; Founding Partner</div>
+        <p style="font-size:13.5px;color:var(--muted);margin-top:8px;">Pan-Asian early-stage veteran. Direct reality checks on market depth and regional expansion.</p>
+      </div>
+
+      <div class="card">
+        <div style="width:48px;height:48px;border-radius:50%;background:rgba(198,65,10,0.1);color:var(--ember);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;">M</div>
+        <h4 class="serif" style="font-size:20px;margin-top:14px;">Dr. Alicia Lim</h4>
+        <div class="tag" style="margin-top:3px;color:var(--ember);">Healthtech &amp; B2B Enterprise Lead</div>
+        <p style="font-size:13.5px;color:var(--muted);margin-top:8px;">Deep domain expertise in healthcare compliance, clinical integrations, and enterprise procurement.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- REALITY CHECK REPORT ADVISORY PHOTOGRAPHY -->
+  <div style="background:var(--ink);color:var(--paper);padding:84px 0;">
+    <div class="wrap">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;">
+        <div>
+          <div class="eyebrow" style="color:var(--gold);">Follow-Through &amp; Accountability</div>
+          <h2 class="display" style="font-size:48px;margin-top:14px;color:var(--paper);">
+            The 30 / 60 / 90-Day Founder Journey
+          </h2>
+          <p class="serif" style="font-size:18px;color:#CFC2B4;margin-top:16px;line-height:1.55;">
+            The real signature of Founders Drive is what happens after the stage lights go off. Each startup receives a documented Reality Check Report, an action plan tracked in Convex DB, and a day 90 review showing what was implemented, what changed, and what results were achieved.
+          </p>
+          
+          <div style="margin-top:28px;display:grid;gap:12px;">
+            <div style="background:rgba(255,255,255,0.06);padding:14px 18px;border-radius:6px;border-left:3px solid var(--ember);">
+              <span class="mono" style="font-size:12px;color:var(--gold);">Day 0:</span> <strong style="color:var(--paper);">Pitch + Reality Check + Live Room Verdict</strong>
+            </div>
+            <div style="background:rgba(255,255,255,0.06);padding:14px 18px;border-radius:6px;border-left:3px solid var(--ember);">
+              <span class="mono" style="font-size:12px;color:var(--gold);">Day 7:</span> <strong style="color:var(--paper);">Final Documented 30-Day Action Plan</strong>
+            </div>
+            <div style="background:rgba(255,255,255,0.06);padding:14px 18px;border-radius:6px;border-left:3px solid var(--ember);">
+              <span class="mono" style="font-size:12px;color:var(--gold);">Day 30 &amp; 60:</span> <strong style="color:var(--paper);">Progress Updates &amp; Ecosystem Introductions</strong>
+            </div>
+            <div style="background:rgba(255,255,255,0.06);padding:14px 18px;border-radius:6px;border-left:3px solid var(--gold);">
+              <span class="mono" style="font-size:12px;color:var(--gold);">Day 90:</span> <strong style="color:var(--paper);">Reality Check 2 + Progress Score + Case Study</strong>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.15);">
+          <img src="./assets/reality_check.jpg" alt="Reality Check Advisory Session" style="width:100%;height:420px;object-fit:cover;display:block;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RUN OF SHOW -->
+  <div class="wrap" style="padding:80px 0;">
+    <div class="eyebrow">Event Schedule</div>
+    <h2 class="display" style="font-size:44px;margin-top:16px;">One evening. 75 minutes of high-density programming.</h2>
+
+    <div style="margin-top:36px;border-top:1px solid var(--ink);">
+      <div style="display:grid;grid-template-columns:140px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid var(--line);">
+        <div class="mono" style="font-size:14px;color:var(--muted);">6:30 PM</div>
+        <div style="font-size:16px;">Doors open, check-in &amp; warm networking over coffee/tea.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid var(--line);">
+        <div class="mono" style="font-size:14px;color:var(--muted);">7:00 PM</div>
+        <div style="font-size:16px;">Opening remarks &amp; live audience scorecard QR activation.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid var(--line);">
+        <div class="mono" style="font-size:14px;color:var(--ember);font-weight:600;">7:10 PM</div>
+        <div style="font-size:16px;"><strong>Pitch 1: Aerocrop Agtech</strong> &mdash; 5 min pitch &middot; 10 min Reality Check &middot; 3 min verdict.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid var(--line);">
+        <div class="mono" style="font-size:14px;color:var(--ember);font-weight:600;">7:28 PM</div>
+        <div style="font-size:16px;"><strong>Pitch 2: BayarPulse</strong> &mdash; 5 min pitch &middot; 10 min Reality Check &middot; 3 min verdict.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid var(--line);">
+        <div class="mono" style="font-size:14px;color:var(--muted);">7:46 PM</div>
+        <div style="font-size:16px;">Intermission &amp; live audience poll results reveal on big screen.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid var(--line);">
+        <div class="mono" style="font-size:14px;color:var(--ember);font-weight:600;">7:56 PM</div>
+        <div style="font-size:16px;"><strong>Pitch 3: SupplyJaga</strong> &mdash; 5 min pitch &middot; 10 min Reality Check &middot; 3 min verdict.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid var(--line);">
+        <div class="mono" style="font-size:14px;color:var(--ember);font-weight:600;">8:14 PM</div>
+        <div style="font-size:16px;"><strong>Pitch 4: MedFlow AI</strong> &mdash; 5 min pitch &middot; 10 min Reality Check &middot; 3 min verdict.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr;gap:24px;padding:18px 0;border-bottom:1px solid var(--ink);">
+        <div class="mono" style="font-size:14px;color:var(--muted);">8:32 PM</div>
+        <div style="font-size:16px;">Final room scores reveal, action plan commitments &amp; open networking until 9:30 PM.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px;display:flex;justify-content:center;gap:16px;">
+      <button class="btn">Apply to Pitch at Vol. 02</button>
+      <button class="btn-ghost">Register Your Startup Profile</button>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

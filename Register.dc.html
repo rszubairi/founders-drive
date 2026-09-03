@@ -1,0 +1,512 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    :root{
+      --paper:#FBF7F1; --ink:#17120E; --muted:#6E635A; --faint:#9B8E7F;
+      --ember:#C6410A; --ember-deep:#8A2D0A; --gold:#E8A87C; --gold-2:#F0C199;
+      --panel:#F2EADE; --panel-2:#EDE3D3; --line:#E2D6C4; --line-strong:#D6C7B0; --err:#A63244;
+      --sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+      --serif:"Newsreader",Georgia,"Times New Roman",serif;
+      --display:"Instrument Serif","Newsreader",Georgia,serif;
+      --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--panel);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;font-weight:450;-webkit-font-smoothing:antialiased;}
+    h1,h2,h3{margin:0;font-weight:400;letter-spacing:-0.015em;}
+    p{margin:0;}
+    a{color:var(--ember);text-decoration:none;} a:hover{color:var(--ember-deep);}
+    .display{font-family:var(--display);letter-spacing:-0.015em;line-height:1.02;}
+    .serif{font-family:var(--serif);} .mono{font-family:var(--mono);}
+    .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ember);font-weight:500;}
+    .tag{font-family:var(--mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--faint);}
+    .lbl{display:block;font-size:13px;font-weight:500;letter-spacing:0.01em;color:var(--ink);margin-bottom:7px;}
+    .hint{font-size:12.5px;color:var(--faint);margin-top:6px;font-family:var(--serif);}
+    .inp{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--paper);border:1px solid var(--line-strong);border-radius:6px;padding:12px 14px;transition:border-color .15s ease, box-shadow .15s ease;}
+    .inp:focus{outline:none;border-color:var(--ember);box-shadow:0 0 0 3px rgba(198,65,10,0.12);}
+    textarea.inp{min-height:90px;resize:vertical;line-height:1.5;}
+    .err{color:var(--err);font-size:12.5px;margin-top:5px;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:var(--ember);color:var(--paper);font-family:var(--sans);font-weight:500;font-size:15px;padding:14px 28px;border:1px solid var(--ember);border-radius:6px;cursor:pointer;transition:all .15s ease;}
+    .btn:hover{background:var(--ember-deep);border-color:var(--ember-deep);color:#fff;}
+    .btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:transparent;color:var(--ink);font-family:var(--sans);font-weight:500;font-size:15px;padding:14px 28px;border:1px solid var(--line-strong);border-radius:6px;cursor:pointer;transition:all .15s ease;}
+    .btn-ghost:hover{border-color:var(--ink);}
+    .card-preview{background:var(--paper);border:1px solid var(--line-strong);border-radius:12px;padding:24px;box-shadow:0 12px 32px rgba(23,18,14,0.06);}
+  </style>
+</helmet>
+
+<div style="width:1440px;background:var(--panel);padding:60px 0 96px;overflow:hidden;">
+  <div style="max-width:980px;margin:0 auto;padding:0 50px;">
+
+    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+      <div class="eyebrow">Founders Drive &middot; Malaysian Startup Directory</div>
+      <div class="tag" style="color:var(--ember);">Convex DB Integrated</div>
+    </div>
+    
+    <h1 class="display" style="font-size:54px;margin-top:14px;">Register your startup profile.</h1>
+    <p class="serif" style="font-size:18.5px;color:var(--muted);margin-top:12px;max-width:620px;">
+      Join the curated directory of Malaysian builders, unlock controlled investor intros, access founder perks, and apply for the monthly <strong>Roast My Startup</strong>. Founder contact details stay private by default.
+    </p>
+
+    <!-- STEP PROGRESS BAR -->
+    <div style="display:flex;gap:10px;margin-top:32px;">
+      <sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
+        <div style="{{s.style}}">
+          <span class="mono" style="font-size:11px;">{{s.num}}</span>
+          <span style="font-size:13px;font-weight:500;">{{s.label}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- MAIN FORM CONTAINER -->
+    <div style="background:var(--paper);border:1px solid var(--line-strong);border-radius:12px;margin-top:24px;padding:44px 48px;box-shadow:0 10px 30px rgba(23,18,14,0.04);">
+
+      <!-- STEP 1 : COMPANY & PROPOSITION -->
+      <sc-if value="{{p1}}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <h2 class="serif" style="font-size:28px;">1. Company &amp; Value Proposition</h2>
+          <span class="tag">Basic Profile</span>
+        </div>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px 26px;margin-top:24px;">
+          <div style="grid-column:1 / -1;">
+            <label class="lbl">Company Name *</label>
+            <input class="inp" value="{{form.company}}" onInput="{{f.company}}" placeholder="e.g. Aerocrop Agtech / BayarPulse">
+            <sc-if value="{{e_company}}" hint-placeholder-val="{{ true }}"><div class="err">Please add your company name.</div></sc-if>
+          </div>
+
+          <div style="grid-column:1 / -1;">
+            <label class="lbl">One-Line Pitch / Description *</label>
+            <input class="inp" value="{{form.pitch}}" onInput="{{f.pitch}}" placeholder="What you do, in one clear sentence that an outsider or investor instantly understands">
+            <sc-if value="{{e_pitch}}" hint-placeholder-val="{{ true }}"><div class="err">A clear one-liner helps the panel and investors place you quickly.</div></sc-if>
+          </div>
+
+          <div>
+            <label class="lbl">Website</label>
+            <input class="inp" value="{{form.website}}" onInput="{{f.website}}" placeholder="https://yourcompany.my">
+          </div>
+
+          <div>
+            <label class="lbl">HQ City (Malaysia) *</label>
+            <input class="inp" value="{{form.city}}" onInput="{{f.city}}" placeholder="Kuala Lumpur / Cyberjaya / Penang / JB">
+          </div>
+
+          <div>
+            <label class="lbl">Primary Sector *</label>
+            <select class="inp" value="{{form.sector}}" onChange="{{f.sector}}">
+              <option value="">Select a sector</option>
+              <option value="Fintech">Fintech</option>
+              <option value="SaaS / B2B software">SaaS / B2B software</option>
+              <option value="Agritech / Deep Tech">Agritech / Deep Tech</option>
+              <option value="Healthtech / AI">Healthtech / AI</option>
+              <option value="Marketplace / Logistics">Marketplace / Logistics</option>
+              <option value="Consumer / D2C">Consumer / D2C</option>
+              <option value="Climate / Energy">Climate / Energy</option>
+              <option value="Deep tech / Robotics">Deep tech / Robotics</option>
+              <option value="Other">Other</option>
+            </select>
+            <sc-if value="{{e_sector}}" hint-placeholder-val="{{ true }}"><div class="err">Please select a sector.</div></sc-if>
+          </div>
+
+          <div>
+            <label class="lbl">Current Stage *</label>
+            <select class="inp" value="{{form.stage}}" onChange="{{f.stage}}">
+              <option value="">Select stage</option>
+              <option value="Idea stage">Idea stage</option>
+              <option value="Pre-Seed">Pre-Seed</option>
+              <option value="Seed">Seed</option>
+              <option value="Pre-Series A">Pre-Series A</option>
+              <option value="Series A">Series A</option>
+            </select>
+            <sc-if value="{{e_stage}}" hint-placeholder-val="{{ true }}"><div class="err">Please select your current stage.</div></sc-if>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- STEP 2 : FOUNDER, TEAM & TRACTION -->
+      <sc-if value="{{p2}}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <h2 class="serif" style="font-size:28px;">2. Founders, Team &amp; Traction</h2>
+          <span class="tag">Operator Credentials</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px 26px;margin-top:24px;">
+          <div>
+            <label class="lbl">Primary Founder Name *</label>
+            <input class="inp" value="{{form.founder}}" onInput="{{f.founder}}" placeholder="e.g. Dharshan Nair / Farah Zainal">
+            <sc-if value="{{e_founder}}" hint-placeholder-val="{{ true }}"><div class="err">Please provide founder name.</div></sc-if>
+          </div>
+
+          <div>
+            <label class="lbl">Founder Role *</label>
+            <input class="inp" value="{{form.role}}" onInput="{{f.role}}" placeholder="Co-Founder & CEO / CTO">
+            <sc-if value="{{e_role}}" hint-placeholder-val="{{ true }}"><div class="err">Please state your role.</div></sc-if>
+          </div>
+
+          <div>
+            <label class="lbl">Founder Private Email *</label>
+            <input class="inp" value="{{form.email}}" onInput="{{f.email}}" placeholder="founder@company.my">
+            <p class="hint">Kept strictly private. Used solely for introduction requests and roast notifications.</p>
+          </div>
+
+          <div>
+            <label class="lbl">Founder LinkedIn Profile</label>
+            <input class="inp" value="{{form.linkedin}}" onInput="{{f.linkedin}}" placeholder="https://linkedin.com/in/...">
+          </div>
+
+          <div style="grid-column:1 / -1;">
+            <label class="lbl">Traction &amp; Milestones to Date *</label>
+            <textarea class="inp" value="{{form.traction}}" onInput="{{f.traction}}" placeholder="e.g. RM 85k MRR, 14 plantation clients in Perak & Sabah, 32% MoM growth, pilot live with 2 hospital chains."></textarea>
+            <sc-if value="{{e_traction}}" hint-placeholder-val="{{ true }}"><div class="err">Please describe your traction or pilots.</div></sc-if>
+            <p class="hint">Hard facts, numbers, live pilots, or revenue run rates help roasters give specific, actionable feedback.</p>
+          </div>
+
+          <div>
+            <label class="lbl">Total Team Size</label>
+            <input class="inp" value="{{form.teamSize}}" onInput="{{f.teamSize}}" placeholder="e.g. 5 (3 engineers, 2 sales)">
+          </div>
+
+          <div>
+            <label class="lbl">Total Funding Raised So Far</label>
+            <input class="inp" value="{{form.raised}}" onInput="{{f.raised}}" placeholder="Bootstrapped / RM 250k Angel / Cradle Grant">
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- STEP 3 : CAPITAL CONNECT & FUNDRAISING -->
+      <sc-if value="{{p3}}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <h2 class="serif" style="font-size:28px;">3. Fundraising &amp; Ecosystem Matching</h2>
+          <span class="tag">Capital Connect</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px 26px;margin-top:24px;">
+          <div>
+            <label class="lbl">Current Fundraising Status *</label>
+            <select class="inp" value="{{form.fundStatus}}" onChange="{{f.fundStatus}}">
+              <option value="">Select status</option>
+              <option value="Not raising right now">Not raising right now</option>
+              <option value="Actively raising">Actively raising</option>
+              <option value="Open to warm introductions">Open to warm introductions</option>
+            </select>
+            <sc-if value="{{e_fundStatus}}" hint-placeholder-val="{{ true }}"><div class="err">Please select your fundraising status.</div></sc-if>
+          </div>
+
+          <div>
+            <label class="lbl">Target Round Size (if raising)</label>
+            <input class="inp" value="{{form.target}}" onInput="{{f.target}}" placeholder="e.g. RM 1.5M - RM 2.5M Seed">
+          </div>
+
+          <div style="grid-column:1 / -1;">
+            <label class="lbl">What specific help do you need most from the ecosystem?</label>
+            <p class="hint" style="margin-bottom:14px;">Select all areas where Founders Drive can connect you with operators, mentors, or VCs:</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <sc-for list="{{helpItems}}" as="h" hint-placeholder-count="8">
+                <div onClick="{{h.toggle}}" style="{{h.style}}">
+                  <div style="{{h.box}}">{{h.mark}}</div>
+                  <span style="font-size:14px;color:var(--ink);">{{h.label}}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROAST MY STARTUP OPT-IN BANNER -->
+        <div style="margin-top:28px;border:1.5px solid var(--ember);border-radius:8px;background:rgba(198,65,10,0.04);padding:24px;">
+          <div onClick="{{applyToggle}}" style="{{applyStyle}}">
+            <div style="{{applyBox}}">{{applyMark}}</div>
+            <div>
+              <div style="font-weight:600;font-size:16px;color:var(--ink);">Apply for Roast My Startup &middot; Vol. 02</div>
+              <div class="serif" style="font-size:14.5px;color:var(--muted);margin-top:4px;">
+                5 minutes to pitch, 10 minutes of structured challenge from rotating VCs and operators. 4 startups selected each month.
+              </div>
+            </div>
+          </div>
+
+          <sc-if value="{{form.applyNext}}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <label class="lbl">Pitch Deck Link (Google Drive / Notion / DocSend)</label>
+                <input class="inp" value="{{form.pitchDeck}}" onInput="{{f.pitchDeck}}" placeholder="https://docsend.com/view/...">
+              </div>
+              <div>
+                <label class="lbl">Why is your team ready for direct scrutiny?</label>
+                <input class="inp" value="{{form.whyReady}}" onInput="{{f.whyReady}}" placeholder="e.g. Ready to stress-test our GTM and pricing model before raising.">
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- STEP 4 : REVIEW & LIVE DIRECTORY CARD PREVIEW -->
+      <sc-if value="{{pReview}}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <h2 class="serif" style="font-size:28px;">4. Review &amp; Directory Card Preview</h2>
+          <span class="tag">Controlled Preview</span>
+        </div>
+        <p class="serif" style="font-size:15px;color:var(--muted);margin-top:6px;">This is how your startup will appear in the Malaysian Startup Directory:</p>
+
+        <!-- LIVE DIRECTORY CARD -->
+        <div class="card-preview" style="margin-top:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div class="tag" style="color:var(--ember);">{{form.sector}} &middot; {{form.stage}} &middot; {{form.city}}</div>
+              <h3 class="display" style="font-size:32px;margin-top:6px;">{{form.company}}</h3>
+              <p class="serif" style="font-size:16px;color:var(--muted);margin-top:4px;max-width:580px;">{{form.pitch}}</p>
+            </div>
+            <div style="text-align:right;">
+              <span class="tag" style="background:rgba(198,65,10,0.1);color:var(--ember);padding:4px 10px;border-radius:4px;font-weight:600;">
+                {{form.fundStatus}}
+              </span>
+            </div>
+          </div>
+
+          <hr style="height:1px;background:var(--line);border:none;margin:18px 0;">
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+            <div>
+              <div class="tag">Founder</div>
+              <div style="font-weight:500;font-size:14.5px;margin-top:3px;">{{form.founder}} ({{form.role}})</div>
+            </div>
+            <div>
+              <div class="tag">Traction</div>
+              <div style="font-size:13.5px;margin-top:3px;color:var(--muted);">{{form.traction}}</div>
+            </div>
+            <div>
+              <div class="tag">Fundraising Target</div>
+              <div style="font-size:13.5px;margin-top:3px;color:var(--muted);">{{form.target}} (Raised: {{form.raised}})</div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;background:var(--panel);padding:10px 16px;border-radius:6px;">
+            <span class="tag" style="color:var(--ink);">Privacy: Contact details hidden &middot; Controlled Introductions Only</span>
+            <span class="tag" style="color:var(--ember);">✓ Ready for Convex Sync</span>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;background:rgba(198,65,10,0.06);border:1px solid var(--line-strong);border-radius:8px;padding:18px 20px;">
+          <div class="mono" style="font-size:12.5px;color:var(--ember);font-weight:600;">Roast My Startup Application:</div>
+          <p class="serif" style="font-size:15px;color:var(--ink);margin-top:4px;">{{applyLine}}</p>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- STEP 5 : SUCCESS CONFIRMATION -->
+      <sc-if value="{{pDone}}" hint-placeholder-val="{{ true }}">
+      <div style="text-align:center;padding:30px 20px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(95,191,106,0.15);color:#2E7D32;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto;">✓</div>
+        <h2 class="display" style="font-size:42px;margin-top:18px;">Profile Created &amp; Synced</h2>
+        <p class="serif" style="font-size:18px;color:var(--muted);margin-top:10px;max-width:540px;margin-left:auto;margin-right:auto;">
+          <strong>{{form.company}}</strong> is now registered in the Founders Drive Malaysian Startup Directory and stored in Convex DB.
+        </p>
+        <div style="margin-top:28px;display:flex;justify-content:center;gap:14px;">
+          <button onClick="{{restart}}" class="btn-ghost">Register Another Startup</button>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- NAVIGATION BUTTONS -->
+      <sc-if value="{{showNav}}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:34px;border-top:1px solid var(--line);padding-top:24px;">
+        <div>
+          <sc-if value="{{canBack}}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{back}}" class="btn-ghost">&larr; Back</button>
+          </sc-if>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <span class="tag">{{stepCounter}}</span>
+          <sc-if value="{{isForm}}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{next}}" class="btn">Continue &rarr;</button>
+          </sc-if>
+          <sc-if value="{{isReview}}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{submit}}" class="btn" style="background:linear-gradient(135deg,var(--gold),var(--ember));color:#fff;border:none;box-shadow:0 8px 24px -6px rgba(198,65,10,.6);">
+              Submit &amp; Sync to Convex &rarr;
+            </button>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1720}}'>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.state = {
+      step: 1,
+      errors: {},
+      form: {
+        company: "Aerocrop Agtech",
+        pitch: "Autonomous drone imagery and predictive yield analytics for oil palm plantations.",
+        website: "https://aerocrop.my",
+        city: "Kuala Lumpur",
+        sector: "Agritech / Deep Tech",
+        stage: "Seed",
+        founder: "Dharshan Nair",
+        role: "Co-Founder & CEO",
+        email: "dharshan@aerocrop.my",
+        linkedin: "https://linkedin.com/in/dharshan-nair",
+        teamSize: "8 people (4 computer vision, 4 operations)",
+        traction: "RM 85k MRR, 14 plantation groups across Perak & Sabah, 42,000 hectares scanned.",
+        raised: "RM 500k Pre-Seed",
+        fundStatus: "Actively raising",
+        target: "RM 2,500,000 Seed",
+        help: ["Customer introductions", "International expansion (Indonesia)", "Fundraising advice"],
+        applyNext: true,
+        pitchDeck: "https://docsend.com/view/aerocrop-seed-deck",
+        whyReady: "Ready to defend our unit economics and enterprise pilot conversion rates."
+      }
+    };
+
+    this.HELP = [
+      "Customer introductions",
+      "Fundraising advice & VC intros",
+      "GTM & Sales mentoring",
+      "Technical architecture review",
+      "Hiring senior talent",
+      "Corporate partnerships",
+      "International expansion (SEA)",
+      "Government grants (Cradle / MDEC)"
+    ];
+  }
+
+  set(field){
+    return (e) => {
+      const val = e && e.target ? e.target.value : e;
+      this.setState({ form: { ...this.state.form, [field]: val } });
+    };
+  }
+
+  toggleHelp(tag){
+    return () => {
+      const cur = this.state.form.help;
+      const nx = cur.indexOf(tag) > -1 ? cur.filter(x => x !== tag) : [...cur, tag];
+      this.setState({ form: { ...this.state.form, help: nx } });
+    };
+  }
+
+  toggleApply(){
+    this.setState({ form: { ...this.state.form, applyNext: !this.state.form.applyNext } });
+  }
+
+  validate(){
+    const f = this.state.form, s = this.state.step, e = {};
+    if (s === 1){
+      if (!f.company.trim()) e.company = 1;
+      if (!f.pitch.trim()) e.pitch = 1;
+      if (!f.sector) e.sector = 1;
+      if (!f.stage) e.stage = 1;
+    } else if (s === 2){
+      if (!f.founder.trim()) e.founder = 1;
+      if (!f.role.trim()) e.role = 1;
+      if (!f.traction.trim()) e.traction = 1;
+    } else if (s === 3){
+      if (!f.fundStatus) e.fundStatus = 1;
+    }
+    return e;
+  }
+
+  next(){
+    const e = this.validate();
+    if (Object.keys(e).length){ this.setState({ errors: e }); return; }
+    this.setState({ step: this.state.step + 1, errors: {} });
+  }
+
+  back(){
+    this.setState({ step: Math.max(1, this.state.step - 1), errors: {} });
+  }
+
+  submit(){
+    this.setState({ step: 5, errors: {} });
+  }
+
+  restart(){
+    this.setState({
+      step: 1,
+      errors: {},
+      form: {
+        company: '', pitch: '', website: '', city: 'Kuala Lumpur', sector: '', stage: '',
+        founder: '', role: 'Founder & CEO', email: '', linkedin: '', teamSize: '',
+        traction: '', raised: 'Bootstrapped', fundStatus: '', target: '',
+        help: [], applyNext: true, pitchDeck: '', whyReady: ''
+      }
+    });
+  }
+
+  renderVals(){
+    const st = this.state.step, f = this.state.form, er = this.state.errors;
+    const labels = ["Company", "Founders & Traction", "Fundraising & Help", "Review & Preview"];
+    const steps = labels.map((label, i) => {
+      const num = i + 1;
+      const active = st === num, done = st > num || st === 5;
+      const base = "display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:6px;border:1px solid;";
+      const style = active
+        ? base + "border-color:var(--ember);background:var(--ember);color:var(--paper);"
+        : done
+        ? base + "border-color:var(--line-strong);background:var(--paper);color:var(--ink);"
+        : base + "border-color:var(--line);background:transparent;color:var(--faint);";
+      return { num: "0" + num, label, style };
+    });
+
+    const fields = ["company", "pitch", "website", "city", "sector", "stage", "founder", "role", "email", "linkedin", "teamSize", "traction", "raised", "fundStatus", "target", "pitchDeck", "whyReady"];
+    const fh = {};
+    fields.forEach(k => { fh[k] = this.set(k); });
+
+    const helpItems = this.HELP.map(tag => {
+      const on = f.help.indexOf(tag) > -1;
+      const style = "display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid " +
+        (on ? "var(--ember)" : "var(--line-strong)") + ";border-radius:6px;cursor:pointer;background:" +
+        (on ? "rgba(198,65,10,0.06)" : "var(--paper)") + ";";
+      const box = "width:18px;height:18px;flex:none;border-radius:4px;border:1.5px solid " +
+        (on ? "var(--ember)" : "var(--line-strong)") + ";background:" + (on ? "var(--ember)" : "transparent") +
+        ";color:var(--paper);font-size:12px;display:flex;align-items:center;justify-content:center;";
+      return { label: tag, toggle: this.toggleHelp(tag), style, box, mark: on ? "✓" : "" };
+    });
+
+    const aOn = f.applyNext;
+    const applyStyle = "display:flex;gap:14px;align-items:flex-start;cursor:pointer;";
+    const applyBox = "width:20px;height:20px;margin-top:2px;flex:none;border-radius:4px;border:1.5px solid " +
+      (aOn ? "var(--ember)" : "var(--line-strong)") + ";background:" + (aOn ? "var(--ember)" : "transparent") +
+      ";color:var(--paper);font-size:13px;display:flex;align-items:center;justify-content:center;";
+
+    return {
+      steps,
+      p1: st === 1, p2: st === 2, p3: st === 3, pReview: st === 4, pDone: st === 5,
+      form: f,
+      f: fh,
+      helpItems,
+      applyToggle: () => this.toggleApply(),
+      applyStyle, applyBox, applyMark: aOn ? "✓" : "",
+      e_company: !!er.company, e_pitch: !!er.pitch, e_sector: !!er.sector, e_stage: !!er.stage,
+      e_founder: !!er.founder, e_role: !!er.role, e_traction: !!er.traction, e_fundStatus: !!er.fundStatus,
+      next: () => this.next(), back: () => this.back(), submit: () => this.submit(), restart: () => this.restart(),
+      showNav: st <= 4,
+      canBack: st > 1 && st <= 4,
+      isReview: st === 4,
+      isForm: st <= 3,
+      stepCounter: st <= 4 ? ("Step " + st + " of 4") : "",
+      applyLine: f.applyNext
+        ? "Your application for Roast My Startup Vol. 02 is ready to submit. Pitch deck: " + (f.pitchDeck || 'Attached')
+        : "You can apply for upcoming Roast My Startup editions anytime from your founder dashboard."
+    };
+  }
+}
+</script>
+</body>
+</html>

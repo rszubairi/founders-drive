@@ -1,0 +1,12 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Home", "x": 0, "y": 0, "w": 1440, "h": 6800 },
+    { "file": "Event.dc.html", "title": "Roast My Startup — Event", "x": 1560, "y": 0, "w": 1440, "h": 3800 },
+    { "file": "Register.dc.html", "title": "Register your startup", "x": 0, "y": 6960, "w": 1440, "h": 1720, "is_interactive": true },
+    { "file": "Poll.dc.html", "title": "Live audience poll", "x": 1560, "y": 6960, "w": 1440, "h": 1420, "is_interactive": true }
+  ],
+  "annotations": [
+    { "id": "intro", "x": 0, "y": -150, "w": 620, "text": "Founders Drive — Warm KL Minimal direction. Four screens: Home and the Roast My Startup event page (static), plus a working startup-registration flow and a live audience poll (both clickable). Bracketed text = real facts to fill in." }
+  ],
+  "launch": { "view": "canvas" }
+}

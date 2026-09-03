@@ -131,8 +131,7 @@ export const sendStartupApproved = internalAction({
     eventTitle: v.optional(v.string()),
   },
   handler: async (ctx, a) => {
-    const profile = `${site()}/directory/${a.slug}`;
-    const roast = `${site()}/roast-my-startup`;
+    const signup = `${site()}/founder/login?tab=signup`;
     await send(ctx, {
       kind: "startup_approved",
       meta: { company: a.companyName, slug: a.slug },
@@ -140,10 +139,9 @@ export const sendStartupApproved = internalAction({
       subject: `${a.companyName} is approved on Founders Drive`,
       html: shell(
         `You're in, ${a.founderName}.`,
-        p(`<b>${a.companyName}</b> is now live in the Malaysian startup directory. Add your logo, team photos, press and the programmes you've been through from the profile.`) +
-          `<p style="margin:6px 0 16px">${btn(profile, "Open your profile")}</p>` +
-          p(`<b>Want to pitch at ${a.eventTitle ?? "Roast My Startup"}?</b> On the event page, hit <b>Roast Me</b> to put your startup forward. The team picks the four founders who go on stage.`) +
-          `<p style="margin:6px 0 0">${btn(roast, "Go to the event page")}</p>`,
+        p(`<b>${a.companyName}</b> is now live in the Malaysian startup directory.`) +
+          p(`<b>Set up your login</b> (this email + a password) to manage everything from one place — your pitch and metrics, company logo, your founder photo and contact, and <b>Roast Me</b> to put ${a.companyName} forward for ${a.eventTitle ?? "Roast My Startup"}.`) +
+          `<p style="margin:6px 0 0">${btn(signup, "Create your login")}</p>`,
       ),
     });
   },

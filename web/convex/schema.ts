@@ -34,6 +34,11 @@ export default defineSchema({
     featured: v.optional(v.boolean()),
     logoUrl: v.optional(v.string()), // external URL fallback
     logoId: v.optional(v.id("_storage")), // uploaded logo (preferred)
+    // pitch materials
+    tags: v.optional(v.array(v.string())), // up to 3 business tags
+    founderVideoUrl: v.optional(v.string()), // 1-min founder intro video
+    deckUrl: v.optional(v.string()), // pitch deck — external link
+    deckId: v.optional(v.id("_storage")), // pitch deck — uploaded PDF (preferred)
     createdAt: v.number(),
     // profile ownership (set once a claim is approved)
     claimedByEmail: v.optional(v.string()),
@@ -295,6 +300,128 @@ export default defineSchema({
     status: v.string(), // Pending | Accepted | Declined
     createdAt: v.number(),
   }).index("by_startup", ["startupId"]),
+
+  // Founder accounts (email + password). A v1 auth layer — an account can
+  // manage startups whose founder/claimed email matches its own.
+  founderAccounts: defineTable({
+    email: v.string(), // lower-cased
+    passwordHash: v.string(), // pbkdf2$iterations$saltB64$hashB64
+    name: v.optional(v.string()),
+    createdAt: v.number(),
+    lastLoginAt: v.optional(v.number()),
+  }).index("by_email", ["email"]),
+
+  founderSessions: defineTable({
+    accountId: v.id("founderAccounts"),
+    email: v.string(),
+    token: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  }).index("by_token", ["token"]),
+
+  // Investor accounts — sign in to manage the fund profile, post ecosystem
+  // news/events, and read founder outreach.
+  investorAccounts: defineTable({
+    email: v.string(),
+    passwordHash: v.string(),
+    name: v.optional(v.string()),
+    createdAt: v.number(),
+    lastLoginAt: v.optional(v.number()),
+  }).index("by_email", ["email"]),
+
+  investorSessions: defineTable({
+    accountId: v.id("investorAccounts"),
+    email: v.string(),
+    token: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  }).index("by_token", ["token"]),
+
+  // Ecosystem news posts (tab 1 of /news). Posted by VCs or admin.
+  newsPosts: defineTable({
+    title: v.string(),
+    url: v.optional(v.string()),
+    source: v.optional(v.string()),
+    summary: v.optional(v.string()),
+    body: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    authorType: v.string(), // "vc" | "admin"
+    authorName: v.string(),
+    authorInvestorId: v.optional(v.id("investors")),
+    publishedAt: v.optional(v.string()),
+    status: v.string(), // "published" | "pending" | "hidden"
+    createdAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_author", ["authorInvestorId"]),
+
+  // Upcoming ecosystem events (tab 2 of /news). Posted by agencies/VCs.
+  ecosystemEvents: defineTable({
+    title: v.string(),
+    date: v.string(), // free text, e.g. "14 Mar 2026"
+    location: v.optional(v.string()),
+    url: v.optional(v.string()),
+    description: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    isSponsored: v.optional(v.boolean()),
+    authorType: v.string(), // "vc" | "admin"
+    authorName: v.string(),
+    authorInvestorId: v.optional(v.id("investors")),
+    status: v.string(), // "published" | "pending" | "hidden"
+    createdAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_author", ["authorInvestorId"]),
+
+  // Paid founder -> VC outreach.
+  outreachCredits: defineTable({
+    founderAccountId: v.id("founderAccounts"),
+    balance: v.number(),
+    updatedAt: v.number(),
+  }).index("by_account", ["founderAccountId"]),
+
+  outreachThreads: defineTable({
+    founderAccountId: v.id("founderAccounts"),
+    founderEmail: v.string(),
+    startupId: v.id("startups"),
+    startupName: v.string(),
+    investorId: v.id("investors"),
+    investorFund: v.string(),
+    subject: v.string(),
+    status: v.string(), // "sent" | "replied" | "declined" | "interested"
+    createdAt: v.number(),
+    lastMessageAt: v.number(),
+    founderUnread: v.optional(v.number()),
+    investorUnread: v.optional(v.number()),
+  })
+    .index("by_founder", ["founderAccountId"])
+    .index("by_investor", ["investorId"])
+    .index("by_pair", ["founderAccountId", "investorId", "startupId"]),
+
+  outreachMessages: defineTable({
+    threadId: v.id("outreachThreads"),
+    from: v.string(), // "founder" | "investor"
+    body: v.string(),
+    deckUrl: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_thread", ["threadId"]),
+
+  // Stripe webhook idempotency.
+  stripeWebhookEvents: defineTable({
+    eventId: v.string(),
+    type: v.string(),
+    createdAt: v.number(),
+  }).index("by_event", ["eventId"]),
+
+  stripeCheckouts: defineTable({
+    sessionId: v.string(),
+    founderAccountId: v.id("founderAccounts"),
+    credits: v.number(),
+    status: v.string(), // "pending" | "complete"
+    createdAt: v.number(),
+  }).index("by_session", ["sessionId"]),
 
   // Every transactional email attempt — sent, skipped (no API key), or errored.
   emailLog: defineTable({

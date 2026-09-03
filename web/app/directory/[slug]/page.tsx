@@ -100,6 +100,46 @@ export default function StartupProfile({
             </a>
           )}
 
+          {startup.tags?.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {startup.tags.map((t: string) => (
+                <span
+                  key={t}
+                  className="rounded-full bg-paper-2 px-3 py-1 text-[12px] font-medium text-muted"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {(startup.deckUrl || startup.founderVideoUrl) && (
+            <div className="mt-5 flex flex-wrap gap-3">
+              {startup.deckUrl && (
+                <a
+                  href={startup.deckUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-hair-2 px-4 py-2 text-[13px] font-medium transition hover:border-ink"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h12l4 4v12H4z" /><path d="M16 4v4h4M8 13h8M8 17h8" /></svg>
+                  Pitch deck
+                </a>
+              )}
+              {startup.founderVideoUrl && (
+                <a
+                  href={startup.founderVideoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-hair-2 px-4 py-2 text-[13px] font-medium transition hover:border-ink"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m22 8-6 4 6 4V8z" /><rect x="2" y="6" width="14" height="12" rx="2" /></svg>
+                  Founder intro
+                </a>
+              )}
+            </div>
+          )}
+
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <Info k="City" v={startup.city} />
             <Info k="Team size" v={startup.teamSize ?? "—"} />

@@ -15,13 +15,22 @@ import type * as emailLog from "../emailLog.js";
 import type * as emails from "../emails.js";
 import type * as events from "../events.js";
 import type * as files from "../files.js";
+import type * as founderAuth from "../founderAuth.js";
+import type * as founderProfile from "../founderProfile.js";
+import type * as http from "../http.js";
+import type * as investorAuth from "../investorAuth.js";
+import type * as investorProfile from "../investorProfile.js";
 import type * as investors from "../investors.js";
 import type * as media from "../media.js";
+import type * as news from "../news.js";
+import type * as outreach from "../outreach.js";
+import type * as passwords from "../passwords.js";
 import type * as perks from "../perks.js";
 import type * as polls from "../polls.js";
 import type * as programmes from "../programmes.js";
 import type * as seed from "../seed.js";
 import type * as startups from "../startups.js";
+import type * as stripe from "../stripe.js";
 
 import type {
   ApiFromModules,
@@ -37,13 +46,22 @@ declare const fullApi: ApiFromModules<{
   emails: typeof emails;
   events: typeof events;
   files: typeof files;
+  founderAuth: typeof founderAuth;
+  founderProfile: typeof founderProfile;
+  http: typeof http;
+  investorAuth: typeof investorAuth;
+  investorProfile: typeof investorProfile;
   investors: typeof investors;
   media: typeof media;
+  news: typeof news;
+  outreach: typeof outreach;
+  passwords: typeof passwords;
   perks: typeof perks;
   polls: typeof polls;
   programmes: typeof programmes;
   seed: typeof seed;
   startups: typeof startups;
+  stripe: typeof stripe;
 }>;
 
 /**

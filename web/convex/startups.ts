@@ -111,6 +111,9 @@ export const getStartupBySlug = query({
     return {
       ...publicStartup(startup),
       logoUrl: await resolveImg(ctx, startup.logoId, startup.logoUrl),
+      deckUrl: startup.deckId
+        ? await ctx.storage.getUrl(startup.deckId)
+        : (startup.deckUrl ?? null),
       programmes,
       claimed: !!startup.claimedByEmail,
       claimedAt: startup.claimedAt,
@@ -300,6 +303,8 @@ function publicStartup(r: any) {
     fundStatus: r.fundStatus,
     targetAmount: r.targetAmount,
     helpWanted: r.helpWanted,
+    tags: r.tags ?? [],
+    founderVideoUrl: r.founderVideoUrl ?? null,
     momentumScore: r.momentumScore,
     realityScore: r.realityScore,
     featured: r.featured,

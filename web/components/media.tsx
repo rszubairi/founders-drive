@@ -183,3 +183,77 @@ export function ImageUpload({
     </div>
   );
 }
+
+/** Generic file upload (used for pitch-deck PDFs). Reports the storageId. */
+export function FileUpload({
+  label,
+  accept = "application/pdf",
+  maxMb = 15,
+  hasExisting = false,
+  onChange,
+}: {
+  label: string;
+  accept?: string;
+  maxMb?: number;
+  hasExisting?: boolean;
+  onChange: (storageId: string | null) => void;
+}) {
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [name, setName] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function handle(file: File) {
+    setErr(null);
+    if (file.size > maxMb * 1024 * 1024) return setErr(`Keep it under ${maxMb} MB.`);
+    setBusy(true);
+    try {
+      const url = await generateUploadUrl();
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        body: file,
+      });
+      const json = (await res.json()) as { storageId: string };
+      setName(file.name);
+      onChange(json.storageId);
+    } catch {
+      setErr("Upload failed — try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div>
+      {label && <span className="mb-1.5 block text-[13px] font-medium text-ink">{label}</span>}
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={busy}
+          className="rounded-full border border-hair-2 px-3.5 py-2 text-[13px] font-medium transition hover:border-ink disabled:opacity-50"
+        >
+          {busy ? "Uploading…" : name || hasExisting ? "Replace file" : "Upload a file"}
+        </button>
+        {name && <span className="text-[12.5px] text-muted">{name}</span>}
+        {!name && hasExisting && (
+          <span className="text-[12.5px] text-faint">A file is already uploaded.</span>
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          hidden
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handle(f);
+            e.target.value = "";
+          }}
+        />
+      </div>
+      {err && <p className="mt-1.5 text-[12.5px] text-[#a63244]">{err}</p>}
+    </div>
+  );
+}

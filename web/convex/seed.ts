@@ -23,6 +23,17 @@ export const seed = mutation({
       "introRequests",
       "profileClaims",
       "emailLog",
+      "founderSessions",
+      "founderAccounts",
+      "investorSessions",
+      "investorAccounts",
+      "newsPosts",
+      "ecosystemEvents",
+      "outreachMessages",
+      "outreachThreads",
+      "outreachCredits",
+      "stripeCheckouts",
+      "stripeWebhookEvents",
       "startupNews",
       "programmeFeedback",
       "startupProgrammes",
@@ -806,6 +817,35 @@ export const seed = mutation({
       });
     }
 
+    // ---- Ecosystem news + events ----
+    const newsSeed = [
+      { title: "Malaysian fintech funding held steady in 2025 despite the regional slowdown", source: "The Edge Malaysia", summary: "Local seed rounds stayed resilient, led by payments and SME lending.", tags: ["Fintech", "Funding"] },
+      { title: "MRANTI opens applications for its 2026 commercialisation cohort", source: "MRANTI", summary: "Up to RM 500k in support for research-based ventures in agritech, healthtech and climate.", tags: ["Grants", "Deep tech"] },
+      { title: "KL climbs regional rankings as a base for early-stage SEA founders", source: "Tech in Asia", summary: "Lower burn, a deep talent pool and government co-investment cited as the draw.", tags: ["Ecosystem"] },
+    ];
+    for (const n of newsSeed)
+      await ctx.db.insert("newsPosts", {
+        ...n,
+        authorType: "admin",
+        authorName: "Founders Drive",
+        status: "published",
+        createdAt: now - Math.random() * 1e9,
+      });
+
+    const eventSeed = [
+      { title: "KL Fintech Week 2026", date: "18–19 Mar 2026", location: "KLCC", description: "Two days of policy, partnerships and a startup showcase.", tags: ["Fintech"], isSponsored: true },
+      { title: "MRANTI Founders Friday", date: "Fri 6 Feb 2026", location: "MRANTI Park, Bukit Jalil", description: "Monthly open house for deep-tech founders and researchers." },
+      { title: "Cradle x Angels: pre-seed pitch night", date: "27 Feb 2026", location: "Common Ground, KL Eco City", description: "Ten pre-seed teams pitch to Cradle and MBAN angels.", isSponsored: true },
+    ];
+    for (const e of eventSeed)
+      await ctx.db.insert("ecosystemEvents", {
+        ...e,
+        authorType: "admin",
+        authorName: "Founders Drive",
+        status: "published",
+        createdAt: now - Math.random() * 1e9,
+      });
+
     return {
       startups: startupSeed.length,
       investors: investors.length,
@@ -813,6 +853,8 @@ export const seed = mutation({
       perks: perks.length,
       contributors: contribSeed.length,
       programmes: programmeSeed.length,
+      news: newsSeed.length,
+      events: eventSeed.length,
     };
   },
 });

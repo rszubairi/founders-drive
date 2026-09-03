@@ -26,6 +26,22 @@ export const setStartupLogo = mutation({
   },
 });
 
+export const setStartupDeck = mutation({
+  args: {
+    slug: v.string(),
+    ownerEmail: v.string(),
+    storageId: v.optional(v.id("_storage")),
+  },
+  handler: async (ctx, a) => {
+    const { startup } = await requireOwner(ctx, a.slug, a.ownerEmail);
+    if (startup.deckId && startup.deckId !== a.storageId) {
+      await ctx.storage.delete(startup.deckId).catch(() => {});
+    }
+    await ctx.db.patch(startup._id, { deckId: a.storageId });
+    return { ok: true };
+  },
+});
+
 export const setFounderPhoto = mutation({
   args: {
     slug: v.string(),

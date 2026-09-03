@@ -31,6 +31,11 @@ const SECTIONS = [
     desc: "Every transactional email — sent, skipped or errored — plus a test send.",
   },
   {
+    href: "/admin/news",
+    title: "News & events",
+    desc: "Post curated news / events and moderate what funds publish on /news.",
+  },
+  {
     href: "/poll/admin",
     title: "Live poll",
     desc: "Run the audience scorecard during the event.",

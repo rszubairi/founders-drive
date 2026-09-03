@@ -123,6 +123,59 @@ a **test send**. Or from the CLI: `npx convex run emails:sendTest '{"to":"…"}'
    Verify a domain at resend.com/domains, then
    `npx convex env set EMAILS_FROM "Founders Drive <hello@yourdomain>" [--prod]`.
 
+## Founder accounts & dashboard
+
+Real login for founders (`convex/founderAuth.ts`, PBKDF2-hashed passwords,
+30-day session tokens in httpOnly cookies).
+
+- **`/founder/login`** — sign in / create account. Sign-up is only allowed if the
+  email is already on a registered startup (founder email or claimed email).
+- **`/dashboard`** — server component checks the `fd_founder` cookie, client
+  renders from `founderAuth.me({ token })`. Per linked startup: edit the profile
+  (`founderProfile.updateStartup`), **pitch materials** (3 business tags, 1-min
+  founder video link, pitch-deck link or uploaded PDF — `media.setStartupDeck`),
+  company logo, founder contact + photo (`founderProfile.updateFounderContact`),
+  and **Roast Me** for the open event once approved.
+- The approval email now points founders to `/founder/login?tab=signup`.
+- `proxy.ts` guards `/dashboard` (cookie presence); `me` does the real validation.
+
+Same caveat as admin: the underlying Convex mutations still accept a plain
+`ownerEmail` — move to Convex Auth / Clerk before launch.
+
+## Investor accounts & dashboard
+
+`convex/investorAuth.ts` mirrors founder auth (`fd_vc` cookie). Sign-up gated to
+the `contactEmail` on an `investors` profile.
+
+- **`/vc/login`** → **`/vc/dashboard`** — edit the fund profile + logo
+  (`investorProfile.updateFund` / `setFundLogoAuthed`), **post to `/news`**
+  (`news.postNews` / `postEvent`), and read/reply to founder **outreach**.
+
+## News & events (`/news`)
+
+Two tabs — **Startup news** (`newsPosts`) and **Upcoming events**
+(`ecosystemEvents`). Posted by signed-in funds (via the VC dashboard) or by admin
+at **`/admin/news`** (which also hides/deletes fund posts). Seeded with a few
+admin-authored items.
+
+## Paid founder → VC outreach
+
+`convex/outreach.ts` + `convex/stripe.ts` + `convex/http.ts`.
+
+- Founder dashboard → **Reach out to investors**: pick a startup + a fund, write a
+  note (the pitch-deck link is attached automatically), spend **1 intro credit**
+  (`outreach.sendToInvestor`). Threads + replies both directions
+  (`outreach.reply`, `thread`, `founderThreads` / `investorThreads`); the VC can
+  mark a thread *interested* / *pass*.
+- **Credits** are bought with **Stripe Checkout** (`stripe.createCheckout`,
+  packs in `stripe.PACKS`, MYR). Fulfilment is the Convex HTTP webhook at
+  **`/stripe/webhook`** (`convex/http.ts`) — verifies the signature, credits the
+  account, idempotent on the Stripe event id.
+- **Setup:** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SITE_URL` as Convex env
+  vars; register the webhook at `https://<deployment>.convex.site/stripe/webhook`
+  for `checkout.session.completed`. Without the keys, buying credits shows a clear
+  error; everything else (send/reply once credited) works.
+
 ## Admin access
 
 The `/admin/*` UI and `/poll/admin` are gated by `proxy.ts` (Next middleware) —

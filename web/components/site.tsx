@@ -6,8 +6,8 @@ const NAV = [
   { href: "/directory", label: "Directory" },
   { href: "/capital-connect", label: "Capital Connect" },
   { href: "/programmes", label: "Programmes" },
+  { href: "/news", label: "News" },
   { href: "/perks", label: "Perks" },
-  { href: "/poll", label: "Live Poll" },
 ];
 
 export function SiteNav() {
@@ -35,9 +35,23 @@ export function SiteNav() {
             </Link>
           ))}
         </nav>
-        <Button href="/register" className="px-5 py-2.5 text-sm">
-          Register your startup
-        </Button>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/founder/login"
+            className="hidden text-[14px] text-muted transition hover:text-ink lg:inline"
+          >
+            Founder login
+          </Link>
+          <Link
+            href="/vc/login"
+            className="hidden text-[14px] text-muted transition hover:text-ink lg:inline"
+          >
+            Investor login
+          </Link>
+          <Button href="/register" className="px-5 py-2.5 text-sm">
+            Register your startup
+          </Button>
+        </div>
       </Container>
     </header>
   );
@@ -76,9 +90,10 @@ export function SiteFooter() {
             title="More"
             links={[
               ["Register", "/register"],
+              ["Founder login", "/founder/login"],
+              ["Investor login", "/vc/login"],
               ["List your fund", "/capital-connect/apply"],
-              ["Apply to pitch", "/roast-my-startup#apply"],
-              ["Admin", "/admin"],
+              ["News", "/news"],
             ]}
           />
         </div>

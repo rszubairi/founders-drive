@@ -39,8 +39,13 @@ if (!/^(prod|preview):/i.test(key) && !/^project:/i.test(key)) {
   );
 }
 
+// No `shell: true` — it would re-split "npm run build" into 3 args and
+// `convex deploy` would reject the extras. Pass argv verbatim instead.
 const res = spawnSync("npx", ["convex", "deploy", "--cmd", "npm run build"], {
   stdio: "inherit",
-  shell: true,
 });
+if (res.error) {
+  console.error(res.error.message);
+  process.exit(1);
+}
 process.exit(res.status ?? 1);

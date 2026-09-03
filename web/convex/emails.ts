@@ -264,3 +264,21 @@ export const sendTest = action({
     return res;
   },
 });
+
+export const sendMentorApproved = internalAction({
+  args: { to: v.string(), name: v.string(), slug: v.string() },
+  handler: async (ctx, a) => {
+    const url = `${site()}/mentors/${a.slug}`;
+    await send(ctx, {
+      kind: "mentor_approved",
+      meta: { name: a.name },
+      to: a.to,
+      subject: "You're live on the Founders Drive Mentor Network",
+      html: shell(
+        `Welcome aboard, ${a.name}.`,
+        p(`Your mentor profile is approved and listed. Founders can now see your rate (with our 20% platform fee shown on top) and book time via your Calendly link.`) +
+          `<p style="margin:6px 0 0">${btn(url, "View your profile")}</p>`,
+      ),
+    });
+  },
+});

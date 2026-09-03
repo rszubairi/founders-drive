@@ -199,6 +199,28 @@ export default defineSchema({
     badge: v.optional(v.string()),
   }).index("by_category", ["category"]),
 
+  // Mentors — vetted operators startups can book by the hour. Founders Drive
+  // adds a 20% platform fee on top of the mentor's rate.
+  mentors: defineTable({
+    name: v.string(),
+    slug: v.string(),
+    email: v.string(), // private
+    title: v.optional(v.string()), // "Ex-VP Growth, Grab"
+    bio: v.string(),
+    categories: v.array(v.string()), // business areas they help with
+    linkedin: v.optional(v.string()),
+    calendlyUrl: v.string(),
+    hourlyRate: v.number(), // RM/hr the mentor receives
+    currency: v.optional(v.string()), // default "RM"
+    photoUrl: v.optional(v.string()),
+    photoId: v.optional(v.id("_storage")),
+    status: v.string(), // "pending" | "approved" | "rejected"
+    reviewedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status", ["status"]),
+
   // Ecosystem contributors: government agencies, ministries, and the VCs /
   // corporates / universities that run cohorts and grants.
   contributors: defineTable({

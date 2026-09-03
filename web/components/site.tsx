@@ -5,9 +5,9 @@ const NAV = [
   { href: "/roast-my-startup", label: "Roast My Startup" },
   { href: "/directory", label: "Directory" },
   { href: "/capital-connect", label: "Capital Connect" },
+  { href: "/mentors", label: "Mentors" },
   { href: "/programmes", label: "Programmes" },
   { href: "/news", label: "News" },
-  { href: "/perks", label: "Perks" },
 ];
 
 export function SiteNav() {
@@ -81,6 +81,7 @@ export function SiteFooter() {
             links={[
               ["Startup Directory", "/directory"],
               ["Capital Connect", "/capital-connect"],
+              ["Mentor Network", "/mentors"],
               ["Programmes", "/programmes"],
               ["Industry contributors", "/contributors"],
               ["Founder Perks", "/perks"],

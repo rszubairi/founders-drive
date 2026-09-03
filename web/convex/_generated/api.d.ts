@@ -22,6 +22,7 @@ import type * as investorAuth from "../investorAuth.js";
 import type * as investorProfile from "../investorProfile.js";
 import type * as investors from "../investors.js";
 import type * as media from "../media.js";
+import type * as mentors from "../mentors.js";
 import type * as news from "../news.js";
 import type * as outreach from "../outreach.js";
 import type * as passwords from "../passwords.js";
@@ -53,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   investorProfile: typeof investorProfile;
   investors: typeof investors;
   media: typeof media;
+  mentors: typeof mentors;
   news: typeof news;
   outreach: typeof outreach;
   passwords: typeof passwords;

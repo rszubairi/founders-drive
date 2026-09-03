@@ -34,6 +34,7 @@ export const seed = mutation({
       "outreachCredits",
       "stripeCheckouts",
       "stripeWebhookEvents",
+      "mentors",
       "startupNews",
       "programmeFeedback",
       "startupProgrammes",
@@ -846,6 +847,32 @@ export const seed = mutation({
         createdAt: now - Math.random() * 1e9,
       });
 
+    // ---- Mentors ----
+    const mentorSeed = [
+      { name: "[Mentor name]", title: "Ex-VP Growth, a SEA super-app", bio: "Ran growth from Series A to C at a regional consumer app. Helps founders build a repeatable acquisition engine, fix activation, and pick the two metrics that actually matter for the next raise.", categories: ["Growth & marketing", "Go-to-market", "Fundraising"], hourlyRate: 450, status: "approved" },
+      { name: "[Mentor name]", title: "2x founder, one exit", bio: "Bootstrapped a B2B SaaS to acquisition, then raised and scaled a second company. Blunt feedback on positioning, pricing, and whether your wedge is real.", categories: ["Product", "Sales", "Fundraising"], hourlyRate: 380, status: "approved" },
+      { name: "[Mentor name]", title: "Fractional CFO for early-stage", bio: "Sets up the finance stack, models runway and unit economics, and gets founders investor-ready without a full-time hire.", categories: ["Operations & finance", "Fundraising"], hourlyRate: 320, status: "approved" },
+      { name: "[Mentor name]", title: "Head of Talent, a Malaysian unicorn", bio: "Built teams from 10 to 300. Helps with the first key hires, comp, equity, and not screwing up culture while moving fast.", categories: ["Hiring & team", "Operations & finance"], hourlyRate: 300, status: "approved" },
+      { name: "[Mentor name]", title: "Principal engineer turned CTO coach", bio: "Advises non-technical founders on architecture decisions, hiring engineers, and managing an agency or offshore team without getting burned.", categories: ["Technical / engineering", "Hiring & team"], hourlyRate: 420, status: "approved" },
+      { name: "[Mentor name]", title: "Corporate lawyer, startup practice", bio: "Incorporation, cap tables, SAFEs, employment and IP for Malaysian startups. Fixed-scope sessions to unblock a specific decision.", categories: ["Legal & compliance", "Fundraising"], hourlyRate: 350, status: "pending" },
+    ];
+    for (const m of mentorSeed) {
+      const slug = `mentor-${m.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 40)}`;
+      await ctx.db.insert("mentors", {
+        name: m.name,
+        slug,
+        email: `mentor.${slug}@example.my`,
+        title: m.title,
+        bio: m.bio,
+        categories: m.categories,
+        calendlyUrl: `https://calendly.com/founders-drive/${slug}`,
+        hourlyRate: m.hourlyRate,
+        currency: "RM",
+        status: m.status,
+        createdAt: now - Math.random() * 5e8,
+      });
+    }
+
     return {
       startups: startupSeed.length,
       investors: investors.length,
@@ -855,6 +882,7 @@ export const seed = mutation({
       programmes: programmeSeed.length,
       news: newsSeed.length,
       events: eventSeed.length,
+      mentors: mentorSeed.length,
     };
   },
 });

@@ -191,6 +191,19 @@ Sign in at `/admin/login`; the cookie lasts 8 hours. **This gates the UI only** 
 the Convex `adminList*` / `decide*` functions are still callable by anyone with
 the deployment URL. Add Convex Auth / Clerk before launch.
 
+## Mentor Network
+
+`convex/mentors.ts` — `/mentors` (directory, filter by category), `/mentors/[slug]`
+(bio, categories, transparent rate breakdown, "book via Calendly" button),
+`/mentors/apply` (public form → `status: "pending"`). Admin approves at
+`/admin/mentors` (`decideMentor` → `sendMentorApproved` email).
+
+**Pricing:** a mentor sets `hourlyRate` (what they receive). Startups are shown
+`startupRate = ceil(hourlyRate × 1.20)` with the **20% Founders Drive fee**
+itemised. Booking + payment happen on the mentor's Calendly; the FD fee is billed
+separately (a Stripe-gated booking flow is a possible follow-up, like outreach
+credits). Fee % is `mentors.PLATFORM_FEE_PCT`.
+
 ## Programmes, contributors & feedback
 
 - **`/contributors`** + `/contributors/[slug]` — agencies, ministries, universities,

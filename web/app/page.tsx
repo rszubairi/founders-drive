@@ -27,7 +27,7 @@ const ECOSYSTEM = [
   ["04", "Founder Perks", "Resources", "/perks"],
   ["05", "Opportunities", "Competitions & programmes", "/perks"],
   ["06", "Founders Drive Podcast", "Knowledge", "/"],
-  ["07", "Mentor Network", "Expertise", "/capital-connect"],
+  ["07", "Mentor Network", "Expertise", "/mentors"],
   ["08", "Founder Follow-up", "Accountability", "/roast-my-startup#journey"],
 ];
 

@@ -36,6 +36,11 @@ const SECTIONS = [
     desc: "Post curated news / events and moderate what funds publish on /news.",
   },
   {
+    href: "/admin/mentors",
+    title: "Mentor sign-ups",
+    desc: "Approve mentors before they appear in the network.",
+  },
+  {
     href: "/poll/admin",
     title: "Live poll",
     desc: "Run the audience scorecard during the event.",

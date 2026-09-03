@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Container, Eyebrow, Button, Card, Field, inputCls } from "@/components/ui";
+import { ImageUpload } from "@/components/media";
 
 const SECTORS = [
   "Fintech",
@@ -50,7 +51,8 @@ type Form = {
   fundStatus: string;
   targetAmount: string;
   helpWanted: string[];
-  applyToRoast: boolean;
+  logoStorageId: string | null;
+  founderPhotoStorageId: string | null;
 };
 
 const EMPTY: Form = {
@@ -70,16 +72,19 @@ const EMPTY: Form = {
   fundStatus: "",
   targetAmount: "",
   helpWanted: [],
-  applyToRoast: true,
+  logoStorageId: null,
+  founderPhotoStorageId: null,
 };
 
 export default function RegisterPage() {
   const register = useMutation(api.startups.registerStartup);
+  const setStartupLogo = useMutation(api.media.setStartupLogo);
+  const setFounderPhoto = useMutation(api.media.setFounderPhoto);
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState<{ slug: string } | null>(null);
+  const [done, setDone] = useState(false);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -137,9 +142,21 @@ export default function RegisterPage() {
         founderRole: form.founderRole,
         founderEmail: form.founderEmail.trim(),
         founderLinkedin: form.founderLinkedin || undefined,
-        applyToRoast: form.applyToRoast,
       });
-      setDone({ slug: (res as { slug: string }).slug });
+      const slug = (res as { slug: string }).slug;
+      const email = form.founderEmail.trim();
+      if (form.logoStorageId) {
+        await setStartupLogo({ slug, ownerEmail: email, storageId: form.logoStorageId as never }).catch(() => {});
+      }
+      if (form.founderPhotoStorageId) {
+        await setFounderPhoto({
+          slug,
+          ownerEmail: email,
+          founderEmail: email,
+          storageId: form.founderPhotoStorageId as never,
+        }).catch(() => {});
+      }
+      setDone(true);
     } catch (err) {
       setErrors({ submit: (err as Error).message || "Something went wrong." });
     } finally {
@@ -190,16 +207,15 @@ export default function RegisterPage() {
                 </svg>
               </div>
               <h2 className="font-display mt-5 text-[clamp(28px,4vw,38px)]">
-                {form.name} is in the directory.
+                Registration received.
               </h2>
               <p className="font-serif-x mx-auto mt-3 max-w-md text-[18px] text-muted">
-                We&rsquo;ve emailed <strong>{form.founderEmail}</strong> a confirmation.{" "}
-                {form.applyToRoast
-                  ? "Your Roast My Startup application for Vol. 02 is submitted — selection is confirmed two weeks before the event."
-                  : "You can apply for a future Roast My Startup any time."}
+                We&rsquo;ve emailed <strong>{form.founderEmail}</strong>. The team reviews new
+                profiles within a few working days — you&rsquo;ll get an email when{" "}
+                <strong>{form.name}</strong> is approved, with the steps to put it forward for Roast
+                My Startup.
               </p>
               <div className="mt-7 flex justify-center gap-3">
-                <Button href={`/directory/${done.slug}`}>View your profile</Button>
                 <Button href="/directory" variant="ghost">
                   Browse the directory
                 </Button>
@@ -237,6 +253,13 @@ export default function RegisterPage() {
                       ))}
                     </select>
                   </Field>
+                  <div className="sm:col-span-2">
+                    <ImageUpload
+                      label="Company logo — optional (PNG or SVG, square works best)"
+                      name={form.name}
+                      onChange={(id) => set("logoStorageId", id)}
+                    />
+                  </div>
                 </div>
               )}
 
@@ -254,6 +277,14 @@ export default function RegisterPage() {
                   <Field label="LinkedIn" hint="Optional">
                     <input className={inputCls} value={form.founderLinkedin} onChange={(e) => set("founderLinkedin", e.target.value)} placeholder="linkedin.com/in/…" />
                   </Field>
+                  <div className="sm:col-span-2">
+                    <ImageUpload
+                      label="Your profile picture — optional"
+                      shape="round"
+                      name={form.founderName}
+                      onChange={(id) => set("founderPhotoStorageId", id)}
+                    />
+                  </div>
                   <Field label="Team size">
                     <select className={inputCls} value={form.teamSize} onChange={(e) => set("teamSize", e.target.value)}>
                       <option value="">Select</option>
@@ -315,32 +346,11 @@ export default function RegisterPage() {
                       );
                     })}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => set("applyToRoast", !form.applyToRoast)}
-                    className={`mt-4 flex w-full items-start gap-3 rounded-md border px-4 py-4 text-left transition ${
-                      form.applyToRoast
-                        ? "border-ember bg-[rgba(198,65,10,0.06)]"
-                        : "border-hair-2 bg-paper hover:border-ink"
-                    }`}
-                  >
-                    <span
-                      className={`mt-0.5 flex h-[17px] w-[17px] flex-none items-center justify-center rounded-[3px] border-[1.5px] text-[11px] text-white ${
-                        form.applyToRoast ? "border-ember bg-ember" : "border-hair-2"
-                      }`}
-                    >
-                      {form.applyToRoast ? "✓" : ""}
-                    </span>
-                    <span>
-                      <span className="block text-[15px] font-medium">
-                        Apply for the next Roast My Startup
-                      </span>
-                      <span className="font-serif-x mt-1 block text-[12.5px] text-faint">
-                        Vol. 02 · applications close Fri 12 Jun 2026. You can withdraw any time
-                        before selection.
-                      </span>
-                    </span>
-                  </button>
+                  <p className="font-serif-x mt-4 rounded-md border border-hair-2 bg-paper px-4 py-3 text-[13px] text-muted">
+                    This is a platform registration. Once <strong>{form.name || "your startup"}</strong>{" "}
+                    is approved you can propose it for a specific <strong>Roast My Startup</strong>{" "}
+                    from the event page — hit <strong>&ldquo;Roast Me&rdquo;</strong> there.
+                  </p>
                 </div>
               )}
 
@@ -356,7 +366,6 @@ export default function RegisterPage() {
                       ["Traction", form.traction],
                       ["Funding", `Raised: ${form.fundingRaised || "—"}\nStatus: ${form.fundStatus}${form.targetAmount ? `\nTarget: ${form.targetAmount}` : ""}`],
                       ["Help wanted", form.helpWanted.join(", ") || "—"],
-                      ["Roast My Startup", form.applyToRoast ? "Applying for Vol. 02" : "Not applying yet"],
                     ].map(([k, v]) => (
                       <div key={k} className="grid grid-cols-[180px_1fr] gap-5 border-b border-hair py-3.5">
                         <dt className="tagline pt-0.5">{k}</dt>

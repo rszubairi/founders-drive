@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { requireStartupOwner } from "./authz";
 
 export const getUpcomingEvent = query({
   args: {},
@@ -183,26 +184,93 @@ export const registerForEvent = mutation({
   },
 });
 
-export const applyToPitch = mutation({
+/**
+ * An APPROVED startup's founder proposes to pitch at a specific event.
+ * Gated by the startup-owner email; the admin picks the final four at /admin/roast.
+ */
+export const proposeForRoast = mutation({
   args: {
     eventId: v.id("events"),
-    companyName: v.string(),
-    founderName: v.string(),
-    email: v.string(),
-    oneLiner: v.string(),
-    sector: v.string(),
-    stage: v.string(),
+    startupSlug: v.string(),
+    ownerEmail: v.string(),
+    whyScrutinyReady: v.string(),
     pitchDeckUrl: v.optional(v.string()),
     videoUrl: v.optional(v.string()),
-    whyScrutinyReady: v.string(),
-    helpWanted: v.array(v.string()),
+    helpWanted: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
+    const { startup, founders } = await requireStartupOwner(
+      ctx,
+      args.startupSlug,
+      args.ownerEmail,
+    );
+    if (startup.status !== "approved") {
+      throw new Error(
+        "Your startup profile has to be approved before you can propose for Roast My Startup.",
+      );
+    }
+    if (!args.whyScrutinyReady.trim()) {
+      throw new Error("Tell us why you're ready to open the business to scrutiny.");
+    }
+    const event = await ctx.db.get(args.eventId);
+    if (!event) throw new Error("Event not found");
+    if (event.status === "Completed") {
+      throw new Error("This event has already happened.");
+    }
+
+    const primary = founders.find((f: any) => f.isPrimary) ?? founders[0];
+    const existing = await ctx.db
+      .query("pitchApplications")
+      .withIndex("by_event_startup", (q: any) =>
+        q.eq("eventId", args.eventId).eq("startupId", startup._id),
+      )
+      .unique();
+
+    const fields = {
+      companyName: startup.name,
+      founderName: primary?.name ?? "",
+      email: primary?.email ?? args.ownerEmail,
+      oneLiner: startup.pitch,
+      sector: startup.sector,
+      stage: startup.stage,
+      whyScrutinyReady: args.whyScrutinyReady.trim(),
+      pitchDeckUrl: args.pitchDeckUrl?.trim() || undefined,
+      videoUrl: args.videoUrl?.trim() || undefined,
+      helpWanted: args.helpWanted ?? startup.helpWanted ?? [],
+      proposedByEmail: args.ownerEmail.trim().toLowerCase(),
+    };
+
+    if (existing) {
+      if (existing.status === "Selected") return { ok: true, alreadySelected: true };
+      await ctx.db.patch(existing._id, fields);
+      return { ok: true, updated: true };
+    }
     await ctx.db.insert("pitchApplications", {
-      ...args,
+      eventId: args.eventId,
+      startupId: startup._id,
+      ...fields,
       status: "Pending",
       createdAt: Date.now(),
     });
-    return { ok: true };
+    return { ok: true, updated: false };
+  },
+});
+
+/** Has this startup already proposed for this event? (for the event-page CTA) */
+export const roastProposalStatus = query({
+  args: { eventId: v.id("events"), startupSlug: v.string() },
+  handler: async (ctx, args) => {
+    const startup = await ctx.db
+      .query("startups")
+      .withIndex("by_slug", (q) => q.eq("slug", args.startupSlug))
+      .unique();
+    if (!startup) return null;
+    const row = await ctx.db
+      .query("pitchApplications")
+      .withIndex("by_event_startup", (q) =>
+        q.eq("eventId", args.eventId).eq("startupId", startup._id),
+      )
+      .unique();
+    return row ? { status: row.status } : { status: null };
   },
 });

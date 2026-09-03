@@ -29,7 +29,7 @@ export default function AdminStartupsPage() {
       <h1 className="font-display mt-4 text-[clamp(30px,4vw,48px)]">Startup sign-ups</h1>
       <p className="font-serif-x mt-3 max-w-xl text-[18px] text-muted">
         New registrations start hidden. Approve the ones ready for the public directory — reject the
-        rest, or leave them pending until you're sure.
+        rest, or leave them pending until you&rsquo;re sure.
       </p>
       <p className="mt-4 rounded-md border border-hair-2 bg-paper-2 px-3 py-2 text-[13px] text-muted">
         v1 has no authentication — gate this route (or move it to a secret URL) before launch.

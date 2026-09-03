@@ -1,50 +1,78 @@
-import { internalAction } from "./_generated/server";
+import { internalAction, action } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 /**
- * Transactional email via the Resend REST API.
+ * Transactional email via the Resend REST API. Every attempt is written to the
+ * `emailLog` table (see /admin/emails).
  *
- * Convex env vars (set with `npx convex env set NAME value`, or the dashboard):
- *   RESEND_API_KEY   required to actually send — unset = log-and-skip (dev)
- *   EMAILS_FROM      e.g. "Founders Drive <hello@yourdomain.my>"
+ * Convex env vars (set with `npx convex env set NAME value [--prod]`, or the dashboard):
+ *   RESEND_API_KEY   required to actually send — unset = log "skipped", nothing sent
+ *   EMAILS_FROM      e.g. "Founders Drive <hello@yourdomain.my>" — must be a
+ *                    Resend-verified domain. The default onboarding@resend.dev
+ *                    only delivers to the Resend account owner's own address.
  *   SITE_URL         base URL for links in emails (prod: your Vercel domain)
  *   ADMIN_EMAIL      where profile-claim notices are also sent
  */
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
-async function send(opts: {
-  to: string | string[];
-  subject: string;
-  html: string;
-  replyTo?: string;
-}) {
+async function send(
+  ctx: { runMutation: (ref: any, args: any) => Promise<unknown> },
+  opts: {
+    to: string | string[];
+    subject: string;
+    html: string;
+    kind: string;
+    meta?: Record<string, string>;
+    replyTo?: string;
+  },
+) {
+  const toStr = Array.isArray(opts.to) ? opts.to.join(", ") : opts.to;
   const key = process.env.RESEND_API_KEY;
   const from = process.env.EMAILS_FROM ?? "Founders Drive <onboarding@resend.dev>";
+  const logBase = {
+    to: toStr,
+    subject: opts.subject,
+    kind: opts.kind,
+    meta: opts.meta ? JSON.stringify(opts.meta) : undefined,
+  };
+  const log = (extra: Record<string, unknown>) =>
+    ctx.runMutation(internal.emailLog.record, { ...logBase, ...extra });
+
   if (!key) {
-    console.warn(
-      `[emails] RESEND_API_KEY not set — skipped "${opts.subject}" -> ${opts.to}`,
-    );
+    console.warn(`[emails] RESEND_API_KEY not set — skipped "${opts.subject}" -> ${toStr}`);
+    await log({ status: "skipped", reason: "RESEND_API_KEY not set on this deployment" });
     return { id: null, skipped: true };
   }
-  const res = await fetch(RESEND_ENDPOINT, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to: opts.to,
-      subject: opts.subject,
-      html: opts.html,
-      reply_to: opts.replyTo,
-    }),
-  });
-  if (!res.ok) {
-    throw new Error(`Resend ${res.status}: ${await res.text()}`);
+
+  try {
+    const res = await fetch(RESEND_ENDPOINT, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from,
+        to: opts.to,
+        subject: opts.subject,
+        html: opts.html,
+        reply_to: opts.replyTo,
+      }),
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      await log({ status: "error", reason: `Resend ${res.status}: ${text.slice(0, 400)}` });
+      throw new Error(`Resend ${res.status}: ${text}`);
+    }
+    const json = JSON.parse(text) as { id: string };
+    await log({ status: "sent", providerId: json.id });
+    return json;
+  } catch (e) {
+    const msg = (e as Error).message ?? String(e);
+    if (!msg.startsWith("Resend ")) {
+      await log({ status: "error", reason: msg.slice(0, 400) });
+    }
+    throw e;
   }
-  return (await res.json()) as { id: string };
 }
 
 function site() {
@@ -72,27 +100,50 @@ const p = (t: string) =>
 
 /* ------------------------------------------------------------------ */
 
-export const sendFounderWelcome = internalAction({
+export const sendRegistrationReceived = internalAction({
+  args: {
+    to: v.string(),
+    founderName: v.string(),
+    companyName: v.string(),
+  },
+  handler: async (ctx, a) => {
+    await send(ctx, {
+      kind: "registration_received",
+      meta: { company: a.companyName },
+      to: a.to,
+      subject: `We've got ${a.companyName}'s registration`,
+      html: shell(
+        `Thanks, ${a.founderName}.`,
+        p(`<b>${a.companyName}</b> is registered on Founders Drive and is now with the team for review — we check new profiles within a few working days.`) +
+          p(`You'll get an email the moment it's approved. That email also explains how to put your startup forward for the next <b>Roast My Startup</b>.`) +
+          p(`<span style="color:#9b8e7f;font-size:13px">Your contact details stay private either way.</span>`),
+      ),
+    });
+  },
+});
+
+export const sendStartupApproved = internalAction({
   args: {
     to: v.string(),
     founderName: v.string(),
     companyName: v.string(),
     slug: v.string(),
-    appliedToRoast: v.boolean(),
+    eventTitle: v.optional(v.string()),
   },
-  handler: async (_ctx, a) => {
-    const url = `${site()}/directory/${a.slug}`;
-    await send({
+  handler: async (ctx, a) => {
+    const profile = `${site()}/directory/${a.slug}`;
+    const roast = `${site()}/roast-my-startup`;
+    await send(ctx, {
+      kind: "startup_approved",
+      meta: { company: a.companyName, slug: a.slug },
       to: a.to,
-      subject: `${a.companyName} is on Founders Drive`,
+      subject: `${a.companyName} is approved on Founders Drive`,
       html: shell(
-        `Welcome, ${a.founderName}.`,
-        p(`<b>${a.companyName}</b> is now listed in the Malaysian startup directory. Your contact details stay private &mdash; introductions are always yours to accept or decline.`) +
-          (a.appliedToRoast
-            ? p(`Your <b>Roast My Startup &mdash; Vol.&nbsp;02</b> application is in. We confirm the four pitching startups two weeks before the event.`)
-            : "") +
-          p(`Review or update the profile any time:`) +
-          `<p style="margin:6px 0 0">${btn(url, "View your profile")}</p>`,
+        `You're in, ${a.founderName}.`,
+        p(`<b>${a.companyName}</b> is now live in the Malaysian startup directory. Add your logo, team photos, press and the programmes you've been through from the profile.`) +
+          `<p style="margin:6px 0 16px">${btn(profile, "Open your profile")}</p>` +
+          p(`<b>Want to pitch at ${a.eventTitle ?? "Roast My Startup"}?</b> On the event page, hit <b>Roast Me</b> to put your startup forward. The team picks the four founders who go on stage.`) +
+          `<p style="margin:6px 0 0">${btn(roast, "Go to the event page")}</p>`,
       ),
     });
   },
@@ -105,9 +156,11 @@ export const sendClaimVerification = internalAction({
     companyName: v.string(),
     token: v.string(),
   },
-  handler: async (_ctx, a) => {
+  handler: async (ctx, a) => {
     const url = `${site()}/claim/verify?token=${a.token}`;
-    await send({
+    await send(ctx, {
+      kind: "claim_verification",
+      meta: { company: a.companyName },
       to: a.to,
       subject: `Confirm your claim to ${a.companyName}`,
       html: shell(
@@ -131,13 +184,15 @@ export const sendClaimNotice = internalAction({
     note: v.optional(v.string()),
     evidenceUrl: v.optional(v.string()),
   },
-  handler: async (_ctx, a) => {
+  handler: async (ctx, a) => {
     const admin = process.env.ADMIN_EMAIL;
     const to = [a.ownerEmail, admin].filter(Boolean) as string[];
     if (to.length === 0) return;
     const review = `${site()}/admin/claims`;
     try {
-      await send({
+      await send(ctx, {
+        kind: "claim_notice",
+        meta: { company: a.companyName },
         to,
         replyTo: a.claimantEmail,
         subject: `Profile claim: ${a.companyName}`,
@@ -164,10 +219,12 @@ export const sendClaimDecision = internalAction({
     approved: v.boolean(),
     slug: v.string(),
   },
-  handler: async (_ctx, a) => {
+  handler: async (ctx, a) => {
     const url = `${site()}/directory/${a.slug}`;
     try {
-      await send({
+      await send(ctx, {
+        kind: a.approved ? "claim_approved" : "claim_rejected",
+        meta: { company: a.companyName },
         to: a.to,
         subject: a.approved
           ? `You now manage ${a.companyName} on Founders Drive`
@@ -186,5 +243,26 @@ export const sendClaimDecision = internalAction({
     } catch (e) {
       console.error("[emails] claim decision failed:", (e as Error).message);
     }
+  },
+});
+
+/**
+ * Fire a test email to check Resend + domain wiring.
+ *   npx convex run emails:sendTest '{"to":"you@example.com"}' [--prod]
+ * Also called from /admin/emails.
+ */
+export const sendTest = action({
+  args: { to: v.string() },
+  handler: async (ctx, { to }) => {
+    const res = await send(ctx, {
+      kind: "test",
+      to,
+      subject: "Founders Drive — test email",
+      html: shell(
+        "It works.",
+        p("If this landed in your inbox, Resend and your sending domain are wired correctly."),
+      ),
+    });
+    return res;
   },
 });

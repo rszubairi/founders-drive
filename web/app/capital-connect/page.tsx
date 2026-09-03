@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Container, Eyebrow, Card, Chip, Button } from "@/components/ui";
+import { Logo } from "@/components/media";
 
 const SECTORS = ["Fintech", "SaaS / B2B software", "Healthtech / AI", "Marketplace / Logistics"];
 const STAGES = ["Pre-Seed", "Seed", "Series A"];
@@ -58,11 +59,14 @@ export default function CapitalConnectPage() {
         {investors?.map((inv: any) => (
           <Card key={inv._id} className="fd-lift p-6">
             <div className="flex items-start justify-between">
-              <div>
-                <h3 className="font-display text-[26px]">{inv.fundName}</h3>
-                <div className="text-[13px] text-muted">
-                  {inv.name}
-                  {inv.role ? ` · ${inv.role}` : ""}
+              <div className="flex items-center gap-3">
+                <Logo src={inv.logoUrl} name={inv.fundName} size={40} />
+                <div>
+                  <h3 className="font-display text-[26px] leading-none">{inv.fundName}</h3>
+                  <div className="mt-1 text-[13px] text-muted">
+                    {inv.name}
+                    {inv.role ? ` · ${inv.role}` : ""}
+                  </div>
                 </div>
               </div>
               {inv.isVerified && (

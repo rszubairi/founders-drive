@@ -50,7 +50,6 @@ export default function RoastPage() {
   const pastEvents = useQuery(api.events.getPastEvents);
   const lastEvent = pastEvents?.[0];
   const registerForEvent = useMutation(api.events.registerForEvent);
-  const applyToPitch = useMutation(api.events.applyToPitch);
 
   return (
     <>
@@ -92,8 +91,8 @@ export default function RoastPage() {
                     />
                   </tbody>
                 </table>
-                <Button href="#apply" className="mt-4 w-full">
-                  Apply to pitch
+                <Button href="#roast-me" className="mt-4 w-full">
+                  Roast Me
                 </Button>
               </Card>
             </Reveal>
@@ -196,7 +195,7 @@ export default function RoastPage() {
                 The real signature of Founders Drive is what happens after the pitch. Your 30-day action plan is synced directly with Convex DB, matching you with operators, mentors, and debt/equity partners.
               </p>
               <div className="mt-6 flex gap-4">
-                <Button href="#apply">Apply for Vol. 02</Button>
+                <Button href="#roast-me">Roast Me · Vol. 02</Button>
                 <Button href="/directory" variant="ghost">Browse Roasted Alumni</Button>
               </div>
             </div>
@@ -291,9 +290,16 @@ export default function RoastPage() {
               Not pitching?{" "}
               <RsvpInline event={event} register={registerForEvent} />
             </p>
+            <p className="mt-3 text-[13px] text-faint">
+              Your startup isn&rsquo;t registered yet?{" "}
+              <Link href="/register" className="text-gold underline">
+                Register it first
+              </Link>{" "}
+              — once it&rsquo;s approved you can Roast Me here.
+            </p>
           </div>
 
-          <ApplyForm event={event} apply={applyToPitch} />
+          <RoastMeForm event={event} />
         </Container>
       </section>
 
@@ -379,104 +385,154 @@ function RsvpInline({ event, register }: { event: any; register: any }) {
   );
 }
 
-function ApplyForm({ event, apply }: { event: any; apply: any }) {
+function RoastMeForm({ event }: { event: any }) {
+  const propose = useMutation(api.events.proposeForRoast);
+  const [email, setEmail] = useState("");
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const mine = useQuery(
+    api.startups.myStartupsForEmail,
+    emailOk ? { email: email.trim() } : "skip",
+  );
+  const approved = (mine ?? []).filter((s: any) => s.status === "approved");
+
   const [f, setF] = useState({
-    companyName: "",
-    founderName: "",
-    email: "",
-    oneLiner: "",
-    sector: "",
-    stage: "",
+    startupSlug: "",
     whyScrutinyReady: "",
+    pitchDeckUrl: "",
+    videoUrl: "",
     helpWanted: [] as string[],
   });
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
-  const ok = f.companyName && f.founderName && f.email && f.oneLiner && f.whyScrutinyReady;
+  const ready = emailOk && f.startupSlug && f.whyScrutinyReady.trim();
+
+  async function submit() {
+    if (!event) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      await propose({
+        eventId: event._id,
+        startupSlug: f.startupSlug,
+        ownerEmail: email.trim(),
+        whyScrutinyReady: f.whyScrutinyReady,
+        pitchDeckUrl: f.pitchDeckUrl || undefined,
+        videoUrl: f.videoUrl || undefined,
+        helpWanted: f.helpWanted.length ? f.helpWanted : undefined,
+      });
+      setDone(true);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
-    <Card className="p-7">
+    <Card className="p-7" id="roast-me">
       {done ? (
         <div className="py-6 text-center">
-          <h3 className="font-display text-3xl">Application in.</h3>
+          <h3 className="font-display text-3xl">You&rsquo;re in the running.</h3>
           <p className="font-serif-x mt-2 text-muted">
-            We review every application and confirm the four pitching startups two weeks before the
-            event.
+            The team reviews every proposal and confirms the four pitching startups about two weeks
+            before {event?.title ?? "the event"}. You can update this any time before then.
           </p>
         </div>
       ) : (
         <>
-          <div className="tagline text-ember">
-            Apply to pitch · {event?.volume ?? "Vol. 02"}
-          </div>
+          <div className="tagline text-ember">Roast Me · {event?.volume ?? "Vol. 02"}</div>
+          <p className="mt-2 text-[14px] text-muted">
+            Put an <b>approved</b> startup profile forward for this event. We pull your pitch,
+            sector and stage from the profile.
+          </p>
           <div className="mt-4 grid gap-4">
-            <Field label="Company name">
-              <input className={inputCls} value={f.companyName} onChange={(e) => setF({ ...f, companyName: e.target.value })} />
+            <Field label="Email on your startup profile" hint="The founder or claimed email.">
+              <input className={inputCls} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@yourcompany.my" />
             </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Founder name">
-                <input className={inputCls} value={f.founderName} onChange={(e) => setF({ ...f, founderName: e.target.value })} />
+
+            {emailOk && mine !== undefined && approved.length === 0 && (
+              <p className="rounded-md border border-hair-2 bg-paper-2 px-3 py-2 text-[13px] text-muted">
+                No approved startup found for that email.{" "}
+                <Link href="/register" className="text-ember">
+                  Register
+                </Link>{" "}
+                or{" "}
+                <Link href="/directory" className="text-ember">
+                  claim your profile
+                </Link>
+                , then wait for the approval email.
+              </p>
+            )}
+
+            {approved.length > 0 && (
+              <Field label="Which startup?">
+                <select
+                  className={inputCls}
+                  value={f.startupSlug}
+                  onChange={(e) => setF({ ...f, startupSlug: e.target.value })}
+                >
+                  <option value="">Select your startup</option>
+                  {approved.map((s: any) => (
+                    <option key={s.slug} value={s.slug}>
+                      {s.name} — {s.stage} · {s.sector}
+                    </option>
+                  ))}
+                </select>
               </Field>
-              <Field label="Email">
-                <input className={inputCls} value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
-              </Field>
-            </div>
-            <Field label="One-liner">
-              <input className={inputCls} value={f.oneLiner} onChange={(e) => setF({ ...f, oneLiner: e.target.value })} />
-            </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Sector">
-                <input className={inputCls} value={f.sector} onChange={(e) => setF({ ...f, sector: e.target.value })} />
-              </Field>
-              <Field label="Stage">
-                <input className={inputCls} value={f.stage} onChange={(e) => setF({ ...f, stage: e.target.value })} />
-              </Field>
-            </div>
-            <Field label="Why are you ready to open the business to scrutiny?">
-              <textarea className={`${inputCls} min-h-[80px]`} value={f.whyScrutinyReady} onChange={(e) => setF({ ...f, whyScrutinyReady: e.target.value })} />
-            </Field>
-            <div>
-              <span className="mb-1.5 block text-[13px] font-medium">Help you want</span>
-              <div className="flex flex-wrap gap-2">
-                {HELP.map((h) => {
-                  const on = f.helpWanted.includes(h);
-                  return (
-                    <button
-                      key={h}
-                      type="button"
-                      onClick={() =>
-                        setF({
-                          ...f,
-                          helpWanted: on
-                            ? f.helpWanted.filter((x) => x !== h)
-                            : [...f.helpWanted, h],
-                        })
-                      }
-                      className={`rounded-full border px-3 py-1.5 text-[12.5px] ${
-                        on ? "border-ember bg-[rgba(198,65,10,0.08)] text-ember" : "border-hair-2 text-muted"
-                      }`}
-                    >
-                      {h}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <Button
-              disabled={!ok || busy}
-              onClick={async () => {
-                if (!event) return;
-                setBusy(true);
-                try {
-                  await apply({ eventId: event._id, ...f });
-                  setDone(true);
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            >
-              {busy ? "Submitting…" : "Submit application"}
+            )}
+
+            {f.startupSlug && (
+              <>
+                <Field label="Why are you ready to open the business to scrutiny?">
+                  <textarea className={`${inputCls} min-h-[90px]`} value={f.whyScrutinyReady} onChange={(e) => setF({ ...f, whyScrutinyReady: e.target.value })} />
+                </Field>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Pitch deck URL" hint="Optional">
+                    <input className={inputCls} value={f.pitchDeckUrl} onChange={(e) => setF({ ...f, pitchDeckUrl: e.target.value })} placeholder="https://" />
+                  </Field>
+                  <Field label="2-min video URL" hint="Optional">
+                    <input className={inputCls} value={f.videoUrl} onChange={(e) => setF({ ...f, videoUrl: e.target.value })} placeholder="https://" />
+                  </Field>
+                </div>
+                <div>
+                  <span className="mb-1.5 block text-[13px] font-medium">
+                    Help you want <span className="text-faint">— optional</span>
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {HELP.map((h) => {
+                      const on = f.helpWanted.includes(h);
+                      return (
+                        <button
+                          key={h}
+                          type="button"
+                          onClick={() =>
+                            setF({
+                              ...f,
+                              helpWanted: on
+                                ? f.helpWanted.filter((x) => x !== h)
+                                : [...f.helpWanted, h],
+                            })
+                          }
+                          className={`rounded-full border px-3 py-1.5 text-[12.5px] ${
+                            on
+                              ? "border-ember bg-[rgba(198,65,10,0.08)] text-ember"
+                              : "border-hair-2 text-muted"
+                          }`}
+                        >
+                          {h}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {err && <p className="text-[12.5px] text-[#a63244]">{err}</p>}
+            <Button disabled={!ready || busy} onClick={submit}>
+              {busy ? "Submitting…" : "Roast Me"}
             </Button>
           </div>
         </>

@@ -71,8 +71,8 @@ Malaysian audience. `@vercel/analytics` + `@vercel/speed-insights` are wired in
 | Route | Notes |
 |---|---|
 | `/` | Home — the concept, Reality Check framework, 30/60/90 journey, You Said / We Did, ecosystem, poll teaser. Static. |
-| `/roast-my-startup` | Flagship event — run of show, 6-pillar framework, **apply to pitch** + **RSVP** forms (Convex). |
-| `/register` | 4-step startup registration wizard → `startups` + `founders` (+ optional pitch application). |
+| `/roast-my-startup` | Flagship event — run of show, framework, **Roast Me** (an approved startup's founder proposes for *this* event) + **RSVP** forms. |
+| `/register` | 4-step registration wizard → `startups` (`status: "pending"`) + `founders`. Platform registration only. |
 | `/directory` | Searchable/filterable startup directory (`listStartups`). |
 | `/directory/[slug]` | Startup profile, Reality Check report, **Request an introduction**, live VC match scores. |
 | `/capital-connect` | Investor / VC directory with filters. |
@@ -86,8 +86,19 @@ Malaysian audience. `@vercel/analytics` + `@vercel/speed-insights` are wired in
 
 **Resend** sends transactional email from Convex actions (`convex/emails.ts`):
 
-- **Founder welcome** — on `registerStartup`, scheduled to the founder's work email
-  (now a required field in the wizard).
+- **Registration received** — on `registerStartup`, to the founder's work email
+  ("pending review").
+- **Startup approved** — on `decideStartup(approve)` (first time), tells the founder
+  the profile is live and to hit **Roast Me** on the event page to put it forward.
+
+### Two-step Roast My Startup flow
+
+1. `/register` → profile lands `status: "pending"`. **No** event application is created.
+2. Admin approves at `/admin/startups` (`decideStartup`) → approval email.
+3. On `/roast-my-startup`, the founder enters the profile email → picks an **approved**
+   startup (`myStartupsForEmail`) → **Roast Me** (`proposeForRoast`, owner-email gated,
+   rejects non-approved) creates one `pitchApplications` row for that event.
+4. Admin picks the final four at `/admin/roast` (`selectForPitch` / `deselectFromPitch`).
 - **Profile claims** — on `/directory/[slug]` anyone can *Claim this profile* with a
   business email. `submitClaim` emails them a confirmation link; `/claim/verify`
   calls `verifyClaim`:
@@ -101,6 +112,50 @@ Malaysian audience. `@vercel/analytics` + `@vercel/speed-insights` are wired in
 Without `RESEND_API_KEY` set, every send is logged and skipped — the flows still
 work locally, you just don't get the emails. Set the Convex env vars from
 `.env.example` (`npx convex env set NAME value [--prod]`).
+
+## Programmes, contributors & feedback
+
+- **`/contributors`** + `/contributors/[slug]` — agencies, ministries, universities,
+  corporates and programme-running VCs (`contributors` table; a `VC / accelerator`
+  contributor can link to its `investors` row via `investorId`).
+- **`/programmes`** + `/programmes/[slug]` — the grants and cohorts each contributor
+  runs (`programmes` table). Detail page shows the offer, an aggregate rating
+  (overall + mentorship / funding / network), the Founders Drive startups that went
+  through it, and **anonymous** founder comments.
+- **Startup profile → "Programmes & grants"** — a claimed profile can tag which
+  programmes it went through (`startupProgrammes`, owner-email gated, `verified`
+  flag set by admin) and rate them from the programme page.
+- **Feedback is anonymous by construction**: `programmeFeedback` stores `startupId`
+  for one-review-per-startup dedupe, but no query ever returns it or any email —
+  only the ratings, comment and cohort label. Gate: you must have tagged the
+  programme on your profile before you can rate it.
+
+Convex: `contributors.ts`, `programmes.ts`, shared `authz.ts` (`requireStartupOwner`).
+`submitContributor` / `submitProgramme` land as `reviewStatus: "pending"` for a
+future admin queue (`adminList*` / `decide*` exist; no admin UI page yet).
+
+## Images (logos, headshots, press)
+
+Uploads go straight to **Convex file storage** (`convex/files.ts` →
+`generateUploadUrl`, then `<ImageUpload>` POSTs the file and hands the `storageId`
+to a mutation). Read queries resolve `logoId`/`photoId` → a `*.convex.cloud` URL,
+falling back to any external `*Url` string. `next.config.ts` allows any `https`
+image host for founder-supplied logo / press-image URLs.
+
+- **Startup logo** + **founder photo** — set in the `/register` wizard; editable
+  later once the profile is claimed (schema `startups.logoId`, `founders.photoId`).
+- **Startup news** — `startupNews` table; shown as an "In the news" list on the
+  profile. A claimed profile shows an **Add coverage** form gated by the owner
+  email (`media.addStartupNews` / `deleteStartupNews`).
+- **VC fund logo** — set in `/capital-connect/apply` (`investors.logoId`,
+  `media.setInvestorLogo` — no email gate; also settable from `/admin/investors`).
+
+Shown on: directory cards + profile header (startup logo), profile Team section
+(founder avatars, initials-monogram fallback), Capital Connect cards (fund logo).
+
+⚠️ v1: `generateUploadUrl` is unauthenticated — anyone can upload a blob to
+storage (the *attach* mutations are gated). Add auth + size/type limits server-side
+before launch.
 
 ## Backend (`convex/`)
 

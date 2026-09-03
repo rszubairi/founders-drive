@@ -5,6 +5,7 @@ const NAV = [
   { href: "/roast-my-startup", label: "Roast My Startup" },
   { href: "/directory", label: "Directory" },
   { href: "/capital-connect", label: "Capital Connect" },
+  { href: "/programmes", label: "Programmes" },
   { href: "/perks", label: "Perks" },
   { href: "/poll", label: "Live Poll" },
 ];
@@ -66,6 +67,8 @@ export function SiteFooter() {
             links={[
               ["Startup Directory", "/directory"],
               ["Capital Connect", "/capital-connect"],
+              ["Programmes", "/programmes"],
+              ["Industry contributors", "/contributors"],
               ["Founder Perks", "/perks"],
             ]}
           />

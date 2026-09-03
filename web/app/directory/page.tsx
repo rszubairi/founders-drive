@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Container, Eyebrow, Card, Chip } from "@/components/ui";
+import { Logo } from "@/components/media";
 
 const SECTORS = [
   "Fintech",
@@ -94,8 +95,11 @@ export default function DirectoryPage() {
                   {s.fundStatus}
                 </span>
               </div>
-              <h3 className="font-display mt-3 text-[26px]">{s.name}</h3>
-              <p className="font-serif-x mt-1.5 flex-1 text-[15px] text-muted">{s.pitch}</p>
+              <div className="mt-3 flex items-center gap-3">
+                <Logo src={s.logoUrl} name={s.name} size={40} />
+                <h3 className="font-display text-[26px] leading-none">{s.name}</h3>
+              </div>
+              <p className="font-serif-x mt-2 flex-1 text-[15px] text-muted">{s.pitch}</p>
               <div className="mt-4 flex items-center justify-between border-t border-hair pt-3 text-[12px] text-faint">
                 <span className="font-mono-x">
                   {s.stage} · {s.city}

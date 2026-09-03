@@ -22,6 +22,11 @@ export const seed = mutation({
       "eventRegistrations",
       "introRequests",
       "profileClaims",
+      "startupNews",
+      "programmeFeedback",
+      "startupProgrammes",
+      "programmes",
+      "contributors",
       "startups",
       "investors",
       "events",
@@ -688,11 +693,125 @@ export const seed = mutation({
     ];
     for (const p of perks) await ctx.db.insert("founderPerks", p);
 
+    // ---- Industry contributors (agencies, ministries, programme-running VCs) ----
+    const contribSeed = [
+      { name: "Malaysia Digital Economy Corporation", shortName: "MDEC", type: "Government agency", website: "https://mdec.my", focusAreas: ["Digital economy", "Tech exports", "Talent"], description: "The lead agency for Malaysia's digital economy — grants, the Malaysia Digital status, and acceleration programmes." },
+      { name: "Cradle Fund", shortName: "Cradle", type: "Government agency", website: "https://cradle.com.my", focusAreas: ["Pre-seed", "Seed", "Commercialisation"], description: "Government-linked early-stage funding agency running the CIP grant series and direct equity (DEQ)." },
+      { name: "Malaysian Research Accelerator for Technology and Innovation", shortName: "MRANTI", type: "Government agency", website: "https://mranti.my", focusAreas: ["Deep tech", "Commercialisation", "Agritech", "Healthtech"], description: "National R&D commercialisation agency — park, testbeds, and technology acceleration." },
+      { name: "Ministry of Science, Technology and Innovation", shortName: "MOSTI", type: "Ministry", website: "https://www.mosti.gov.my", focusAreas: ["Science & technology", "Innovation policy", "Deep tech"], description: "Federal ministry funding technology development through TDF and related instruments." },
+      { name: "PETRONAS", shortName: "PETRONAS", type: "Corporate", website: "https://www.petronas.com", focusAreas: ["Energy transition", "Industrial tech", "Climate"], description: "National energy company running FutureTech, an accelerator for energy and industrial startups." },
+      { name: "1337 Ventures", shortName: "1337", type: "VC / accelerator", website: "https://1337.ventures", focusAreas: ["Pre-seed", "GTM", "Sector agnostic"], description: "Pre-seed fund and accelerator; runs the Alpha Startups pre-accelerator across the region." },
+      { name: "Gobi Partners", shortName: "Gobi", type: "VC / accelerator", website: "https://gobi.vc", focusAreas: ["Seed", "Series A", "Islamic economy"], description: "Pan-Asian VC; runs the Taqwatech and Dana Impact cohorts alongside its funds." },
+      { name: "Sunway iLabs", shortName: "Sunway iLabs", type: "University", website: "https://sunway-innovation-labs.com", focusAreas: ["Healthtech", "Edtech", "Smart cities"], description: "Sunway Group's innovation arm — the Super Accelerator and a seed fund." },
+    ];
+    const contribIds: Record<string, any> = {};
+    for (const c of contribSeed) {
+      const slug = c.shortName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      // link Cradle / 1337 / Gobi to their investor rows if present
+      const inv = (await ctx.db.query("investors").collect()).find((x: any) =>
+        x.fundName.toLowerCase().includes(c.shortName.toLowerCase()) ||
+        x.fundName.toLowerCase().includes(c.name.toLowerCase().split(" ")[0]),
+      );
+      contribIds[c.shortName] = await ctx.db.insert("contributors", {
+        ...c,
+        slug,
+        investorId: inv?._id,
+        reviewStatus: "approved",
+        createdAt: now,
+      });
+    }
+
+    // ---- Programmes: cohorts + grants ----
+    const programmeSeed = [
+      { c: "MDEC", name: "MD Startup Grant", kind: "Grant", fundingAmount: "Up to RM 50,000", equity: "Equity-free", summary: "Early-stage grant for Malaysia Digital status companies to build and validate.", stageFocus: ["Idea stage", "Pre-Seed"], sectorFocus: [], cadence: "Rolling", lifecycle: "Open" },
+      { c: "MDEC", name: "Global Acceleration & Innovation Network (GAIN)", kind: "Accelerator / cohort", fundingAmount: "Soft-landing support", equity: "Equity-free", summary: "Market-access programme helping growth-stage Malaysian tech firms expand abroad.", stageFocus: ["Seed", "Series A"], sectorFocus: [], cadence: "Annual", lifecycle: "Ongoing" },
+      { c: "Cradle", name: "CIP Spark", kind: "Grant", fundingAmount: "Up to RM 150,000", equity: "Equity-free", summary: "Conditional grant for pre-seed founders to get from prototype to first customers.", stageFocus: ["Pre-Seed"], sectorFocus: [], cadence: "Twice a year", lifecycle: "Open" },
+      { c: "Cradle", name: "CIP Sprint", kind: "Grant", fundingAmount: "Up to RM 600,000", equity: "Equity-free", summary: "Larger conditional grant for startups with early traction and a path to raising.", stageFocus: ["Pre-Seed", "Seed"], sectorFocus: [], cadence: "Twice a year", lifecycle: "Open" },
+      { c: "Cradle", name: "DEQ (Direct Equity)", kind: "Grant", fundingAmount: "RM 500k – RM 4M", equity: "Up to 20%", summary: "Direct equity co-investment alongside qualified lead investors.", stageFocus: ["Seed", "Series A"], sectorFocus: [], cadence: "Rolling", lifecycle: "Open" },
+      { c: "MRANTI", name: "MRANTI Technology Commercialisation Programme", kind: "Accelerator / cohort", fundingAmount: "Up to RM 500,000", equity: "Equity-free", summary: "Structured commercialisation support for research-based ventures — testbeds, mentoring, market pilots.", stageFocus: ["Pre-Seed", "Seed"], sectorFocus: ["Agritech / Deep Tech", "Healthtech / AI", "Climate / Energy"], cadence: "Annual", lifecycle: "Upcoming" },
+      { c: "MOSTI", name: "Technology Development Fund 1 (TDF1)", kind: "Grant", fundingAmount: "Up to RM 500,000", equity: "Equity-free", summary: "Grant for pre-commercialisation technology development and prototyping.", stageFocus: ["Idea stage", "Pre-Seed"], sectorFocus: [], cadence: "Rolling", lifecycle: "Open" },
+      { c: "PETRONAS", name: "FutureTech Accelerator", kind: "Accelerator / cohort", fundingAmount: "Pilot funding + PoC", equity: "Equity-free", summary: "12-week accelerator pairing energy and industrial startups with PETRONAS business units for paid pilots.", stageFocus: ["Seed", "Series A"], sectorFocus: ["Climate / Energy", "Deep tech / Robotics"], cadence: "Annual", lifecycle: "Closed" },
+      { c: "1337", name: "Alpha Startups Pre-Accelerator", kind: "Accelerator / cohort", fundingAmount: "Up to RM 25,000", equity: "Up to 4%", summary: "One-week intensive then a build sprint; demo day to angels and pre-seed funds.", stageFocus: ["Idea stage", "Pre-Seed"], sectorFocus: [], cadence: "Quarterly", lifecycle: "Open" },
+      { c: "Gobi", name: "Taqwatech Cohort", kind: "Accelerator / cohort", fundingAmount: "Up to USD 100,000", equity: "Negotiated", summary: "Cohort for startups serving the Islamic economy — halal, modest fashion, Islamic finance, pilgrimage.", stageFocus: ["Pre-Seed", "Seed"], sectorFocus: ["Fintech", "Consumer / D2C"], cadence: "Annual", lifecycle: "Ongoing" },
+      { c: "Sunway iLabs", name: "Super Accelerator", kind: "Accelerator / cohort", fundingAmount: "Up to RM 200,000", equity: "Up to 8%", summary: "15-week accelerator with access to the Sunway ecosystem as a first customer.", stageFocus: ["Pre-Seed", "Seed"], sectorFocus: ["Healthtech / AI", "Marketplace / Logistics"], cadence: "Twice a year", lifecycle: "Open" },
+    ];
+    const progIds: Record<string, any> = {};
+    for (const p of programmeSeed) {
+      const slug = `${p.c}-${p.name}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      progIds[p.name] = await ctx.db.insert("programmes", {
+        contributorId: contribIds[p.c],
+        name: p.name,
+        slug,
+        kind: p.kind,
+        summary: p.summary,
+        fundingAmount: p.fundingAmount,
+        equity: p.equity,
+        stageFocus: p.stageFocus,
+        sectorFocus: p.sectorFocus,
+        cadence: p.cadence,
+        lifecycle: p.lifecycle,
+        reviewStatus: "approved",
+        createdAt: now,
+      });
+    }
+
+    // ---- Startup <-> programme tags ----
+    const tagSeed: [string, string, string, number, string, boolean][] = [
+      ["Aerocrop", "CIP Sprint", "2025 cycle", 2025, "Awarded RM 480k", true],
+      ["Aerocrop", "MRANTI Technology Commercialisation Programme", "Cohort 3", 2024, "Graduated; 2 estate pilots", true],
+      ["BayarPulse", "Alpha Startups Pre-Accelerator", "Batch 41", 2023, "Top 3 at demo day", true],
+      ["BayarPulse", "MD Startup Grant", "—", 2023, "RM 50k", false],
+      ["Kelas Kita", "Sunway iLabs Super Accelerator", "Batch 8", 2024, "Sunway campuses as first customer", true],
+      ["SupplyJaga", "CIP Spark", "2025 cycle", 2025, "Awarded RM 140k", true],
+      ["Tanya AI", "Alpha Startups Pre-Accelerator", "Batch 45", 2025, "Graduated", false],
+      ["MedFlow", "Taqwatech Cohort", "2024", 2024, "Regional expansion track", false],
+    ];
+    for (const [startup, programme, cohortLabel, year, outcome, verified] of tagSeed) {
+      const pid = progIds[programme] ?? progIds[programme.replace("Gobi ", "")];
+      if (!startupIds[startup] || !pid) continue;
+      await ctx.db.insert("startupProgrammes", {
+        startupId: startupIds[startup],
+        programmeId: pid,
+        cohortLabel: cohortLabel === "—" ? undefined : cohortLabel,
+        year,
+        outcome,
+        verified,
+        createdAt: now,
+      });
+    }
+
+    // ---- Anonymous programme feedback ----
+    const fbSeed: [string, string, number, number, number, number, boolean, string][] = [
+      ["Aerocrop", "CIP Sprint", 4, 3, 5, 3, true, "The money was real and equity-free. Reporting was heavy and disbursement slower than planned — budget 3 months of runway around it."],
+      ["SupplyJaga", "CIP Spark", 5, 4, 5, 4, true, "Exactly the right cheque size for pre-seed. Mentor matching was better than expected."],
+      ["BayarPulse", "Alpha Startups Pre-Accelerator", 4, 5, 2, 4, true, "Great for forcing focus and a first network. Don't expect funding from the programme itself."],
+      ["Kelas Kita", "Sunway iLabs Super Accelerator", 4, 4, 4, 5, true, "Access to Sunway as a paying customer was the whole value. The 8% equity is steep — go in with a plan to use the distribution."],
+      ["Tanya AI", "Alpha Startups Pre-Accelerator", 3, 3, 3, 3, false, "Useful week, but the follow-through after demo day was thin for teams that didn't place."],
+    ];
+    for (const [startup, programme, overall, mentorship, funding, network, rec, comment] of fbSeed) {
+      const pid = progIds[programme];
+      if (!startupIds[startup] || !pid) continue;
+      await ctx.db.insert("programmeFeedback", {
+        programmeId: pid,
+        startupId: startupIds[startup],
+        ratingOverall: overall,
+        ratingMentorship: mentorship,
+        ratingFunding: funding,
+        ratingNetwork: network,
+        wouldRecommend: rec,
+        comment,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
     return {
       startups: startupSeed.length,
       investors: investors.length,
       polls: pollDefs.length,
       perks: perks.length,
+      contributors: contribSeed.length,
+      programmes: programmeSeed.length,
     };
   },
 });

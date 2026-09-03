@@ -32,7 +32,8 @@ export default defineSchema({
     momentumScore: v.optional(v.number()),
     realityScore: v.optional(v.number()),
     featured: v.optional(v.boolean()),
-    logoUrl: v.optional(v.string()),
+    logoUrl: v.optional(v.string()), // external URL fallback
+    logoId: v.optional(v.id("_storage")), // uploaded logo (preferred)
     createdAt: v.number(),
     // profile ownership (set once a claim is approved)
     claimedByEmail: v.optional(v.string()),
@@ -56,6 +57,8 @@ export default defineSchema({
     linkedin: v.optional(v.string()),
     phone: v.optional(v.string()), // private
     bio: v.optional(v.string()),
+    photoUrl: v.optional(v.string()), // external URL fallback
+    photoId: v.optional(v.id("_storage")), // uploaded headshot (preferred)
     isPrimary: v.boolean(),
   }).index("by_startup", ["startupId"]),
 
@@ -71,7 +74,9 @@ export default defineSchema({
     thesis: v.optional(v.string()),
     leadPreference: v.optional(v.string()), // "Lead" | "Co-invest" | "Either"
     portfolioHighlights: v.array(v.string()),
-    avatarUrl: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()), // partner headshot
+    logoUrl: v.optional(v.string()), // fund logo — external URL fallback
+    logoId: v.optional(v.id("_storage")), // fund logo — uploaded (preferred)
     website: v.optional(v.string()),
     contactEmail: v.optional(v.string()), // private — never returned by public queries
     isVerified: v.boolean(),
@@ -117,9 +122,12 @@ export default defineSchema({
     videoUrl: v.optional(v.string()),
     whyScrutinyReady: v.string(),
     helpWanted: v.array(v.string()),
-    status: v.string(), // Pending | Shortlisted | Selected | Waitlisted
+    status: v.string(), // Pending | Shortlisted | Selected | Waitlisted | Rejected
+    proposedByEmail: v.optional(v.string()),
     createdAt: v.number(),
-  }).index("by_event", ["eventId"]),
+  })
+    .index("by_event", ["eventId"])
+    .index("by_event_startup", ["eventId", "startupId"]),
 
   roastPolls: defineTable({
     eventId: v.id("events"),
@@ -186,6 +194,98 @@ export default defineSchema({
     badge: v.optional(v.string()),
   }).index("by_category", ["category"]),
 
+  // Ecosystem contributors: government agencies, ministries, and the VCs /
+  // corporates / universities that run cohorts and grants.
+  contributors: defineTable({
+    name: v.string(),
+    slug: v.string(),
+    shortName: v.optional(v.string()), // "MDEC", "MRANTI"
+    type: v.string(), // "Government agency" | "Ministry" | "VC / accelerator" | "Corporate" | "University" | "Foundation"
+    description: v.optional(v.string()),
+    website: v.optional(v.string()),
+    logoUrl: v.optional(v.string()),
+    logoId: v.optional(v.id("_storage")),
+    focusAreas: v.array(v.string()),
+    contactEmail: v.optional(v.string()), // private
+    investorId: v.optional(v.id("investors")), // set when the contributor is also a fund in Capital Connect
+    reviewStatus: v.optional(v.string()), // "pending" | "approved" | "rejected" (missing = approved, for seed)
+    reviewedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_type", ["type"])
+    .index("by_reviewStatus", ["reviewStatus"]),
+
+  // A cohort / accelerator / grant / fellowship run by a contributor.
+  programmes: defineTable({
+    contributorId: v.id("contributors"),
+    name: v.string(),
+    slug: v.string(),
+    kind: v.string(), // "Accelerator / cohort" | "Grant" | "Fellowship" | "Competition"
+    summary: v.optional(v.string()),
+    description: v.optional(v.string()),
+    url: v.optional(v.string()),
+    fundingAmount: v.optional(v.string()), // "Up to RM 500k"
+    equity: v.optional(v.string()), // "Equity-free" | "Up to 8%"
+    stageFocus: v.array(v.string()),
+    sectorFocus: v.array(v.string()),
+    cadence: v.optional(v.string()), // "Twice a year" | "Rolling"
+    lifecycle: v.optional(v.string()), // "Open" | "Closed" | "Upcoming" | "Ongoing"
+    logoUrl: v.optional(v.string()),
+    reviewStatus: v.optional(v.string()),
+    reviewedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_contributor", ["contributorId"])
+    .index("by_kind", ["kind"])
+    .index("by_reviewStatus", ["reviewStatus"]),
+
+  // "This startup went through this programme" — a badge on the startup profile.
+  startupProgrammes: defineTable({
+    startupId: v.id("startups"),
+    programmeId: v.id("programmes"),
+    cohortLabel: v.optional(v.string()), // "Batch 7" | "2025 Cohort"
+    year: v.optional(v.number()),
+    outcome: v.optional(v.string()), // "Graduated" | "Awarded RM 250k grant"
+    addedByEmail: v.optional(v.string()),
+    verified: v.optional(v.boolean()), // contributor / admin confirmed
+    createdAt: v.number(),
+  })
+    .index("by_startup", ["startupId"])
+    .index("by_programme", ["programmeId"])
+    .index("by_pair", ["startupId", "programmeId"]),
+
+  // Ratings + anonymous free-text feedback from startups on a programme.
+  // startupId is kept for dedupe/verification only — never returned publicly.
+  programmeFeedback: defineTable({
+    programmeId: v.id("programmes"),
+    startupId: v.id("startups"),
+    ratingOverall: v.number(), // 1..5
+    ratingMentorship: v.optional(v.number()),
+    ratingFunding: v.optional(v.number()),
+    ratingNetwork: v.optional(v.number()),
+    wouldRecommend: v.optional(v.boolean()),
+    comment: v.optional(v.string()), // shown anonymously
+    cohortLabel: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_programme", ["programmeId"])
+    .index("by_pair", ["programmeId", "startupId"]),
+
+  // Press / coverage links shown on a startup's public profile.
+  startupNews: defineTable({
+    startupId: v.id("startups"),
+    title: v.string(),
+    url: v.string(),
+    source: v.optional(v.string()), // publication name
+    publishedAt: v.optional(v.string()), // free-text date, e.g. "Mar 2026"
+    summary: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_startup", ["startupId"]),
+
   introRequests: defineTable({
     startupId: v.id("startups"),
     requesterName: v.string(),
@@ -195,6 +295,20 @@ export default defineSchema({
     status: v.string(), // Pending | Accepted | Declined
     createdAt: v.number(),
   }).index("by_startup", ["startupId"]),
+
+  // Every transactional email attempt — sent, skipped (no API key), or errored.
+  emailLog: defineTable({
+    to: v.string(),
+    subject: v.string(),
+    kind: v.string(), // registration_received | startup_approved | claim_verification | ...
+    status: v.string(), // "sent" | "skipped" | "error"
+    reason: v.optional(v.string()), // why it was skipped, or the provider error
+    providerId: v.optional(v.string()), // Resend email id
+    meta: v.optional(v.string()), // small JSON blob of context
+    createdAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_kind", ["kind"]),
 
   // Someone asserting they run a startup already in the directory. They verify
   // control of a business email; a domain match auto-approves, otherwise it

@@ -27,7 +27,7 @@ export default function AdminInvestorsPage() {
       <Eyebrow>Founders Drive · host console</Eyebrow>
       <h1 className="font-display mt-4 text-[clamp(30px,4vw,48px)]">VC sign-ups</h1>
       <p className="font-serif-x mt-3 max-w-xl text-[18px] text-muted">
-        New fund profiles start hidden from Capital Connect. Approve the ones you've verified — the
+        New fund profiles start hidden from Capital Connect. Approve the ones you&rsquo;ve verified — the
         contact email below is private and never shown publicly.
       </p>
       <p className="mt-4 rounded-md border border-hair-2 bg-paper-2 px-3 py-2 text-[13px] text-muted">

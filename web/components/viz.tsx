@@ -1,5 +1,53 @@
 "use client";
 
+/** Five-star rating — read-only display or interactive picker. */
+export function Stars({
+  value,
+  onChange,
+  size = 18,
+}: {
+  value: number;
+  onChange?: (v: number) => void;
+  size?: number;
+}) {
+  return (
+    <span className="inline-flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((i) => {
+        const fill = value >= i ? 1 : value >= i - 0.5 ? 0.5 : 0;
+        const star = (
+          <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
+            <defs>
+              <linearGradient id={`fdstar-${i}-${Math.round(value * 10)}`}>
+                <stop offset={`${fill * 100}%`} stopColor="var(--color-ember)" />
+                <stop offset={`${fill * 100}%`} stopColor="var(--color-hair-2)" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M12 2.5l2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.8l-5.8 3.05 1.1-6.45-4.7-4.6 6.5-.95z"
+              fill={`url(#fdstar-${i}-${Math.round(value * 10)})`}
+              stroke="var(--color-ember)"
+              strokeWidth="0.75"
+            />
+          </svg>
+        );
+        return onChange ? (
+          <button
+            key={i}
+            type="button"
+            onClick={() => onChange(i)}
+            className="transition hover:scale-110"
+            aria-label={`${i} star${i > 1 ? "s" : ""}`}
+          >
+            {star}
+          </button>
+        ) : (
+          <span key={i}>{star}</span>
+        );
+      })}
+    </span>
+  );
+}
+
 /** Animated radial score gauge (0–100 or 0–10). */
 export function ScoreGauge({
   value,

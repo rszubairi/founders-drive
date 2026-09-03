@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Container, Eyebrow, Button, Card, Field, inputCls } from "@/components/ui";
+import { ImageUpload } from "@/components/media";
 
 const STAGES = ["Idea stage", "Pre-Seed", "Seed", "Series A", "Series A+"];
 const SECTORS = [
@@ -53,6 +54,8 @@ const EMPTY: Form = {
 
 export default function VcApplyPage() {
   const register = useMutation(api.investors.registerInvestor);
+  const setInvestorLogo = useMutation(api.media.setInvestorLogo);
+  const [logoStorageId, setLogoStorageId] = useState<string | null>(null);
   const [form, setForm] = useState<Form>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -83,7 +86,7 @@ export default function VcApplyPage() {
     if (!validate()) return;
     setSubmitting(true);
     try {
-      await register({
+      const res = await register({
         fundName: form.fundName,
         name: form.name,
         role: form.role || undefined,
@@ -101,6 +104,12 @@ export default function VcApplyPage() {
           .map((p) => p.trim())
           .filter(Boolean),
       });
+      if (logoStorageId && res && (res as { investorId?: string }).investorId) {
+        await setInvestorLogo({
+          investorId: (res as { investorId: string }).investorId as never,
+          storageId: logoStorageId as never,
+        }).catch(() => {});
+      }
       setDone(true);
     } catch (err) {
       setErrors({ submit: (err as Error).message || "Something went wrong." });
@@ -156,6 +165,14 @@ export default function VcApplyPage() {
                 <Field label="Website" hint="Optional">
                   <input className={inputCls} value={form.website} onChange={(e) => set("website", e.target.value)} placeholder="https://" />
                 </Field>
+
+                <div className="sm:col-span-2">
+                  <ImageUpload
+                    label="Fund logo — optional"
+                    name={form.fundName}
+                    onChange={setLogoStorageId}
+                  />
+                </div>
 
                 <Field label="Stage preferences" error={errors.stagePreferences} full>
                   <div className="flex flex-wrap gap-2">

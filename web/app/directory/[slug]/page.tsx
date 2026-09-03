@@ -6,6 +6,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Container, Eyebrow, Card, Button, Field, inputCls } from "@/components/ui";
 import { ScoreGauge } from "@/components/viz";
+import { Logo, Avatar } from "@/components/media";
 
 export default function StartupProfile({
   params,
@@ -78,8 +79,11 @@ export default function StartupProfile({
               </span>
             )}
           </div>
-          <h1 className="font-display mt-3 text-[clamp(40px,6vw,68px)]">{startup.name}</h1>
-          <p className="font-serif-x mt-3 max-w-xl text-[21px] leading-[1.5] text-muted">
+          <div className="mt-3 flex items-center gap-4">
+            <Logo src={startup.logoUrl} name={startup.name} size={64} />
+            <h1 className="font-display text-[clamp(36px,6vw,64px)] leading-[1]">{startup.name}</h1>
+          </div>
+          <p className="font-serif-x mt-4 max-w-xl text-[21px] leading-[1.5] text-muted">
             {startup.pitch}
           </p>
           {startup.description && (
@@ -131,9 +135,12 @@ export default function StartupProfile({
               <div className="tagline">Team</div>
               <div className="mt-2 grid gap-3 sm:grid-cols-2">
                 {startup.founders.map((f: any) => (
-                  <Card key={f.name} className="p-4">
-                    <div className="font-serif-x text-lg">{f.name}</div>
-                    <div className="text-[13px] text-muted">{f.role}</div>
+                  <Card key={f.name} className="flex items-center gap-3 p-4">
+                    <Avatar src={f.photoUrl} name={f.name} size={44} />
+                    <div>
+                      <div className="font-serif-x text-lg leading-tight">{f.name}</div>
+                      <div className="text-[13px] text-muted">{f.role}</div>
+                    </div>
                   </Card>
                 ))}
               </div>
@@ -142,6 +149,19 @@ export default function StartupProfile({
               </p>
             </div>
           )}
+
+          <ProgrammesSection
+            slug={slug}
+            claimed={!!startup.claimed}
+            programmes={startup.programmes ?? []}
+          />
+
+          <NewsSection
+            slug={slug}
+            companyName={startup.name}
+            claimed={!!startup.claimed}
+            news={startup.news ?? []}
+          />
 
           {startup.report && (
             <Card className="mt-10 p-7">
@@ -390,5 +410,297 @@ function ClaimCard({
         </>
       )}
     </Card>
+  );
+}
+
+function ProgrammesSection({
+  slug,
+  claimed,
+  programmes,
+}: {
+  slug: string;
+  claimed: boolean;
+  programmes: any[];
+}) {
+  const all = useQuery(api.programmes.listProgrammes, claimed ? {} : "skip");
+  const tag = useMutation(api.programmes.tagStartupProgramme);
+  const untag = useMutation(api.programmes.untagStartupProgramme);
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState({
+    ownerEmail: "",
+    programmeId: "",
+    cohortLabel: "",
+    year: "",
+    outcome: "",
+  });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const ready =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.ownerEmail.trim()) && f.programmeId;
+
+  async function add() {
+    setBusy(true);
+    setErr(null);
+    try {
+      await tag({
+        startupSlug: slug,
+        ownerEmail: f.ownerEmail,
+        programmeId: f.programmeId as never,
+        cohortLabel: f.cohortLabel || undefined,
+        year: f.year ? Number(f.year) : undefined,
+        outcome: f.outcome || undefined,
+      });
+      setF({ ...f, programmeId: "", cohortLabel: "", year: "", outcome: "" });
+      setOpen(false);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (programmes.length === 0 && !claimed) return null;
+
+  return (
+    <div className="mt-10">
+      <div className="flex items-center justify-between">
+        <div className="tagline">Programmes &amp; grants</div>
+        {claimed && !open && (
+          <button
+            onClick={() => setOpen(true)}
+            className="font-mono-x text-[12px] text-ember hover:text-ember-deep"
+          >
+            + Add a programme
+          </button>
+        )}
+      </div>
+
+      {programmes.length > 0 && (
+        <div className="mt-3 grid gap-2.5">
+          {programmes.map((p: any) => (
+            <div
+              key={p.linkId}
+              className="flex items-start justify-between gap-3 rounded-lg border border-hair bg-card p-4"
+            >
+              <div>
+                <Link
+                  href={`/programmes/${p.slug}`}
+                  className="font-serif-x text-[16px] text-ink hover:text-ember"
+                >
+                  {p.name}
+                </Link>
+                <div className="text-[12px] text-faint">
+                  {[p.contributor, p.cohortLabel, p.year].filter(Boolean).join(" · ")}
+                  {p.verified ? " · verified" : ""}
+                </div>
+                {p.outcome && <div className="mt-0.5 text-[12.5px] text-muted">{p.outcome}</div>}
+              </div>
+              <span className="flex items-center gap-2">
+                <span className="tagline">{p.kind}</span>
+                {claimed && (
+                  <button
+                    onClick={() =>
+                      untag({ startupSlug: slug, ownerEmail: f.ownerEmail, linkId: p.linkId }).catch(
+                        (e) => setErr((e as Error).message),
+                      )
+                    }
+                    title="Remove — needs the owner email entered below"
+                    className="text-faint hover:text-[#a63244]"
+                  >
+                    ×
+                  </button>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {open && (
+        <Card className="mt-3 p-5">
+          <div className="grid gap-3">
+            <Field label="Owner email" hint="The email the profile was claimed with.">
+              <input className={inputCls} value={f.ownerEmail} onChange={(e) => setF({ ...f, ownerEmail: e.target.value })} />
+            </Field>
+            <Field label="Programme">
+              <select className={inputCls} value={f.programmeId} onChange={(e) => setF({ ...f, programmeId: e.target.value })}>
+                <option value="">Select a programme</option>
+                {(all ?? []).map((p: any) => (
+                  <option key={p._id} value={p._id}>
+                    {p.contributor?.shortName ? `${p.contributor.shortName} — ` : ""}
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Cohort / batch" hint="Optional">
+                <input className={inputCls} value={f.cohortLabel} onChange={(e) => setF({ ...f, cohortLabel: e.target.value })} placeholder="Batch 7" />
+              </Field>
+              <Field label="Year" hint="Optional">
+                <input className={inputCls} inputMode="numeric" value={f.year} onChange={(e) => setF({ ...f, year: e.target.value.replace(/[^0-9]/g, "") })} placeholder="2025" />
+              </Field>
+            </div>
+            <Field label="Outcome" hint="Optional">
+              <input className={inputCls} value={f.outcome} onChange={(e) => setF({ ...f, outcome: e.target.value })} placeholder="Graduated · awarded RM 150k" />
+            </Field>
+            {err && <p className="text-[12.5px] text-[#a63244]">{err}</p>}
+            <div className="flex gap-2">
+              <Button onClick={add} disabled={!ready || busy}>
+                {busy ? "Adding…" : "Add"}
+              </Button>
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function NewsSection({
+  slug,
+  companyName,
+  claimed,
+  news,
+}: {
+  slug: string;
+  companyName: string;
+  claimed: boolean;
+  news: any[];
+}) {
+  const add = useMutation(api.media.addStartupNews);
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState({
+    ownerEmail: "",
+    title: "",
+    url: "",
+    source: "",
+    publishedAt: "",
+    summary: "",
+  });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [okMsg, setOkMsg] = useState(false);
+
+  const ready =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.ownerEmail.trim()) &&
+    f.title.trim() &&
+    /^https?:\/\//i.test(f.url.trim());
+
+  async function go() {
+    setBusy(true);
+    setErr(null);
+    try {
+      await add({
+        slug,
+        ownerEmail: f.ownerEmail,
+        title: f.title,
+        url: f.url,
+        source: f.source || undefined,
+        publishedAt: f.publishedAt || undefined,
+        summary: f.summary || undefined,
+      });
+      setOkMsg(true);
+      setF({ ...f, title: "", url: "", source: "", publishedAt: "", summary: "" });
+      setOpen(false);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (news.length === 0 && !claimed) return null;
+
+  return (
+    <div className="mt-10">
+      <div className="flex items-center justify-between">
+        <div className="tagline">In the news</div>
+        {claimed && !open && (
+          <button
+            onClick={() => setOpen(true)}
+            className="font-mono-x text-[12px] text-ember hover:text-ember-deep"
+          >
+            + Add coverage
+          </button>
+        )}
+      </div>
+
+      {okMsg && news.length === 0 && (
+        <p className="mt-2 text-[13px] text-muted">Added — it&rsquo;ll show on the next load.</p>
+      )}
+
+      {news.length > 0 && (
+        <div className="mt-3 grid gap-3">
+          {news.map((n) => (
+            <a
+              key={n._id}
+              href={n.url}
+              target="_blank"
+              rel="noreferrer"
+              className="group flex gap-4 rounded-lg border border-hair bg-card p-4 transition hover:border-ink"
+            >
+              {n.imageUrl && (
+                <span className="relative hidden h-16 w-24 flex-none overflow-hidden rounded bg-paper-2 sm:block">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary publisher host */}
+                  <img src={n.imageUrl} alt="" className="h-full w-full object-cover" />
+                </span>
+              )}
+              <span className="min-w-0">
+                <span className="tagline text-faint">
+                  {[n.source, n.publishedAt].filter(Boolean).join(" · ") || "Press"}
+                </span>
+                <span className="mt-0.5 block font-serif-x text-[16px] leading-snug text-ink group-hover:text-ember">
+                  {n.title}
+                </span>
+                {n.summary && (
+                  <span className="mt-1 block text-[13px] text-muted">{n.summary}</span>
+                )}
+              </span>
+            </a>
+          ))}
+        </div>
+      )}
+
+      {open && (
+        <Card className="mt-3 p-5">
+          <div className="grid gap-3">
+            <Field label={`Owner email for ${companyName}`} hint="The email the profile was claimed with.">
+              <input className={inputCls} value={f.ownerEmail} onChange={(e) => setF({ ...f, ownerEmail: e.target.value })} />
+            </Field>
+            <Field label="Headline">
+              <input className={inputCls} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+            </Field>
+            <Field label="Article URL">
+              <input className={inputCls} value={f.url} onChange={(e) => setF({ ...f, url: e.target.value })} placeholder="https://" />
+            </Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Publication" hint="Optional">
+                <input className={inputCls} value={f.source} onChange={(e) => setF({ ...f, source: e.target.value })} placeholder="The Edge, Tech in Asia…" />
+              </Field>
+              <Field label="Date" hint="Optional">
+                <input className={inputCls} value={f.publishedAt} onChange={(e) => setF({ ...f, publishedAt: e.target.value })} placeholder="Mar 2026" />
+              </Field>
+            </div>
+            <Field label="One-line summary" hint="Optional">
+              <input className={inputCls} value={f.summary} onChange={(e) => setF({ ...f, summary: e.target.value })} />
+            </Field>
+            {err && <p className="text-[12.5px] text-[#a63244]">{err}</p>}
+            <div className="flex gap-2">
+              <Button onClick={go} disabled={!ready || busy}>
+                {busy ? "Adding…" : "Add"}
+              </Button>
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+    </div>
   );
 }

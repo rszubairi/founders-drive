@@ -11,9 +11,11 @@ export const listInvestors = query({
       rows = rows.filter((r: any) => r.sectors.includes(args.sector));
     if (args.stage)
       rows = rows.filter((r: any) => r.stagePreferences.includes(args.stage));
-    return rows
-      .sort((a: any, b: any) => Number(b.isVerified) - Number(a.isVerified))
-      .map(publicInvestor);
+    return Promise.all(
+      rows
+        .sort((a: any, b: any) => Number(b.isVerified) - Number(a.isVerified))
+        .map((r: any) => publicInvestor(ctx, r)),
+    );
   },
 });
 
@@ -67,9 +69,17 @@ export const decideInvestor = mutation({
   },
 });
 
-function publicInvestor(r: any) {
-  const { contactEmail, status, reviewedAt, ...rest } = r;
-  return rest;
+async function publicInvestor(ctx: any, r: any) {
+  const { contactEmail, status, reviewedAt, logoId, ...rest } = r;
+  void contactEmail;
+  void status;
+  void reviewedAt;
+  let logoUrl = r.logoUrl ?? null;
+  if (logoId) {
+    const u = await ctx.storage.getUrl(logoId);
+    if (u) logoUrl = u;
+  }
+  return { ...rest, logoUrl };
 }
 
 /**
@@ -88,7 +98,7 @@ export const matchStartupToVCs = query({
       (r: any) => r.status === "approved",
     );
 
-    const matches = investors.map((inv: any) => {
+    const matches = await Promise.all(investors.map(async (inv: any) => {
       const reasons: string[] = [];
       let score = 0;
 
@@ -121,11 +131,11 @@ export const matchStartupToVCs = query({
       }
 
       return {
-        investor: inv,
+        investor: await publicInvestor(ctx, inv),
         score: Math.min(100, score),
         reasons,
       };
-    });
+    }));
 
     return matches
       .filter((m) => m.score > 0)

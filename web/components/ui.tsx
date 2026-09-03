@@ -73,13 +73,16 @@ export function Card({
   children,
   className = "",
   dark = false,
+  id,
 }: {
   children: ReactNode;
   className?: string;
   dark?: boolean;
+  id?: string;
 }) {
   return (
     <div
+      id={id}
       className={`rounded-2xl ${
         dark
           ? "bg-ink text-paper"

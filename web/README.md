@@ -31,27 +31,36 @@ The git repo root is the parent folder, so the Next app is a **subdirectory**.
 
 1. **Push** the repo to GitHub, then in Vercel: **New Project → import the repo →
    set _Root Directory_ to `web`.** Framework preset: Next.js (auto).
-2. **Convex production deploy key** — Convex dashboard → your project →
-   *Settings → Production → Generate Deploy Key*.
-3. **Vercel → Project → Settings → Environment Variables**, add for
-   *Production* and *Preview*:
+2. **Production deploy key** — Convex dashboard → your project → **Settings**, pick
+   the **Production** deployment in the deployment switcher (top of the page,
+   *not* Development) → **Deploy Keys → Generate Production Deploy Key**. It looks
+   like `prod:swift-otter-123|ey…`.
+   ⚠️ A key generated on the **Development** deployment (`…beloved-armadillo-465…`)
+   causes `401 MissingAccessToken` on Vercel — that is the error you just hit.
+3. **Vercel → Project → Settings → Environment Variables**, for *Production* and
+   *Preview*:
 
    | Name | Value |
    |---|---|
-   | `CONVEX_DEPLOY_KEY` | the key from step 2 (`prod:…`) |
+   | `CONVEX_DEPLOY_KEY` | the `prod:` key from step 2 |
 
-   That is the only variable you set by hand. `vercel.json` overrides the build to
-   `npx convex deploy --cmd 'npm run build'`, which pushes the Convex functions +
-   schema to the production deployment and injects `NEXT_PUBLIC_CONVEX_URL` into
-   the Next build automatically.
-4. **Deploy.** The first build creates the production Convex deployment and its
-   tables.
+   Then **delete `CONVEX_DEPLOYMENT` and `NEXT_PUBLIC_CONVEX_URL`** if the Convex
+   Vercel integration (or an earlier attempt) added them — `convex deploy` sets
+   the URL itself, and a stray `CONVEX_DEPLOYMENT` points the build at the wrong
+   deployment.
+4. **Deploy.** `vercel.json` runs `node scripts/vercel-build.mjs`, which checks
+   the key, runs `convex deploy --cmd 'npm run build'` (pushes functions + schema
+   to prod, injects `NEXT_PUBLIC_CONVEX_URL`), then builds Next. The first run
+   creates the production Convex deployment and its tables.
 5. **Seed production once** (local machine, or the Convex dashboard's function
-   runner against Production):
+   runner against the Production deployment):
 
    ```bash
    npx convex run seed:seed --prod
    ```
+6. **Email in prod** — set the Convex env vars from `.env.example` against
+   production: `npx convex env set RESEND_API_KEY re_… --prod` (likewise
+   `EMAILS_FROM`, `SITE_URL` = your Vercel URL, `ADMIN_EMAIL`).
 
 `vercel.json` also pins serverless functions to `sin1` (Singapore) for the
 Malaysian audience. `@vercel/analytics` + `@vercel/speed-insights` are wired in

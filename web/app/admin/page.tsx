@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Container, Eyebrow, Card } from "@/components/ui";
 
 const SECTIONS = [
@@ -23,6 +26,11 @@ const SECTIONS = [
     desc: "Manual review for profile-ownership claims that couldn't auto-approve.",
   },
   {
+    href: "/admin/emails",
+    title: "Email log",
+    desc: "Every transactional email — sent, skipped or errored — plus a test send.",
+  },
+  {
     href: "/poll/admin",
     title: "Live poll",
     desc: "Run the audience scorecard during the event.",
@@ -30,6 +38,11 @@ const SECTIONS = [
 ];
 
 export default function AdminHubPage() {
+  const router = useRouter();
+  async function signOut() {
+    await fetch("/api/admin/login", { method: "DELETE" });
+    router.replace("/admin/login");
+  }
   return (
     <Container className="py-16">
       <Eyebrow>Founders Drive · host console</Eyebrow>
@@ -37,9 +50,18 @@ export default function AdminHubPage() {
       <p className="font-serif-x mt-3 max-w-xl text-[18px] text-muted">
         Everything a host needs to keep the directory, Capital Connect and the event lineup clean.
       </p>
-      <p className="mt-4 rounded-md border border-hair-2 bg-paper-2 px-3 py-2 text-[13px] text-muted">
-        v1 has no authentication — gate this route (or move it to a secret URL) before launch.
-      </p>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <p className="rounded-md border border-hair-2 bg-paper-2 px-3 py-2 text-[13px] text-muted">
+          The <strong>UI</strong> is gated by the admin login. Convex admin functions are still
+          open — add real auth before launch.
+        </p>
+        <button
+          onClick={signOut}
+          className="rounded-full border border-hair-2 px-3.5 py-2 text-[13px] font-medium hover:border-ink"
+        >
+          Sign out
+        </button>
+      </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {SECTIONS.map((s) => (

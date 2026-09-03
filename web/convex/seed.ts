@@ -22,6 +22,7 @@ export const seed = mutation({
       "eventRegistrations",
       "introRequests",
       "profileClaims",
+      "emailLog",
       "startupNews",
       "programmeFeedback",
       "startupProgrammes",

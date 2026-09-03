@@ -109,9 +109,34 @@ Malaysian audience. `@vercel/analytics` + `@vercel/speed-insights` are wired in
     and a human approves/rejects at `/admin/claims` (`decideClaim`) which emails
     the decision.
 
-Without `RESEND_API_KEY` set, every send is logged and skipped — the flows still
-work locally, you just don't get the emails. Set the Convex env vars from
-`.env.example` (`npx convex env set NAME value [--prod]`).
+**Every send attempt is written to the `emailLog` table** — status `sent` /
+`skipped` (no API key) / `error` (provider rejected), with the Resend id or error
+text. View it at **`/admin/emails`**, which also shows the current config and has
+a **test send**. Or from the CLI: `npx convex run emails:sendTest '{"to":"…"}'`.
+
+**If email isn't arriving:**
+1. `RESEND_API_KEY` must be set **on the Convex deployment** (not Vercel):
+   `npx convex env set RESEND_API_KEY re_… ` and again with `--prod`.
+2. `EMAILS_FROM` must be a **Resend-verified domain**. The default
+   `onboarding@resend.dev` only delivers to the address that owns the Resend
+   account — mail to anyone else fails with a 403 (visible in `/admin/emails`).
+   Verify a domain at resend.com/domains, then
+   `npx convex env set EMAILS_FROM "Founders Drive <hello@yourdomain>" [--prod]`.
+
+## Admin access
+
+The `/admin/*` UI and `/poll/admin` are gated by `proxy.ts` (Next middleware) —
+a single shared login, credentials from env:
+
+| Var | |
+|---|---|
+| `ADMIN_EMAIL` | the login (default `admin`). Set the **same value** as a Convex env var too, for claim-notice emails. |
+| `ADMIN_PASSWORD` | defaults to `Tool4life123!@#` — **override on Vercel**. |
+| `ADMIN_AUTH_SECRET` | optional; change it to sign out every admin session. |
+
+Sign in at `/admin/login`; the cookie lasts 8 hours. **This gates the UI only** —
+the Convex `adminList*` / `decide*` functions are still callable by anyone with
+the deployment URL. Add Convex Auth / Clerk before launch.
 
 ## Programmes, contributors & feedback
 

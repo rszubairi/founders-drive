@@ -33,18 +33,6 @@ export function SiteNav() {
           ))}
         </nav>
         <div className="flex items-center gap-4">
-          <Link
-            href="/founder/login"
-            className="hidden text-[14px] text-muted transition hover:text-ink lg:inline"
-          >
-            Founder login
-          </Link>
-          <Link
-            href="/vc/login"
-            className="hidden text-[14px] text-muted transition hover:text-ink lg:inline"
-          >
-            Investor login
-          </Link>
           <Button href="/register" className="px-5 py-2.5 text-sm">
             Register your startup
           </Button>
